@@ -154,7 +154,7 @@ if type_of_bet == 1:
             break
     print("Динамический баланс" )
 if type_of_bet==2:
-    print("1-й краш - ",file.readline(),"$\n2-й краш - ",file.readline(),"$\n3-й краш - ",file.readline(),"$\n4-й краш - ",file.readline(),"$\n5-й краш - ",file.readline(), "$")
+    print("1-й краш - ",float(file.readline()),"$\n2-й краш - ",float(file.readline()),"$\n3-й краш - ",float(file.readline()),"$\n4-й краш - ",float(file.readline()),"$\n5-й краш - ",float(file.readline()), "$")
     print("Статический баланс")
 file.close()
 default=input()
