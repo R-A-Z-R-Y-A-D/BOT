@@ -91,6 +91,9 @@ def balance():
     return vsego
 def zakup(bal, bet, type):
     if type==1:
+        if round((bal-podushka) * bet)<0.25:
+            zakup(balance(),0.25,2)
+            return 0
         # магазин скинов
         WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.CSS_SELECTOR, "body > app-root > app-wrapper > div > div.aside.aside_game.ng-tns-c79-0.ng-trigger.ng-trigger-gameSidebarAnimation > div > div > app-inventory > div > div.inventory__footer > button"))).click()
         time.sleep(0.8)
@@ -131,6 +134,7 @@ def start():
     driver.find_element(By.CSS_SELECTOR, "body > app-root > app-wrapper > div > div.container.container_main.ng-tns-c79-0.ng-trigger.ng-trigger-containerAnimation > div > app-crash-home > div > div.crash__controller > div.crash__information > div > button").click()
 def print_file():
     file=open("textfail.txt", 'r')
+    podushka = float(file.readline())
     stairs=float(file.readline())
     stL = float(file.readline())
     print("Основные ставки после нескольких крашей подряд:")
@@ -160,11 +164,11 @@ def print_file():
                 " Ставка делается, если в основных ставках после первого краша ставки нет.")
     if stairs == 0:
         print("После лесенок ставки производиться не будут")
+    print("Сумма из вашего баланса, недоступная для ставок - ", podushka, "$")
     file.close()
     print("")
 def change_file():
-    type_of_bet = wait_int(
-        "Какой тип баланса будет использован?\n1. Динамический\n2. Статический\nВведите номер выбраного варианта ")
+    type_of_bet = wait_int("Какой тип баланса будет использован?\n1. Динамический\n2. Статический\nВведите номер выбраного варианта ")
     number_of_crash = wait_int("Введите номер очередного краша, после которого хотите ставить")
     st = [0, 0, 0, 0, 0]
     if type_of_bet == 1:
@@ -189,7 +193,9 @@ def change_file():
         stL = wait_float("Введите сумму ставки в данной ситуации ($) ")
     else:
         stL = 0.0
+    podushka = wait_float("Введите несгораемую сумму:")
     file = open("textfail.txt", 'w')
+    file.write(str(podushka)+"\n")
     file.write(str(stairs) + "\n")
     file.write(str(stL) + "\n")
     file.write(str(type_of_bet) + "\n")
@@ -208,14 +214,17 @@ def menu():
 
 menu()
 file=open("textfail.txt", 'r')
+podushka=float(file.readline())
 stairs=int(file.readline())
 stL=float(file.readline())
 type_of_bet = int(file.readline());st1=float(file.readline()); st2=float(file.readline()); st3=float(file.readline()); st4=float(file.readline()); st5=float(file.readline())
 file.close()
 print("Текущие настройки:")
 print_file()
-podushka=wait_float("Введите несгораемую сумму:")
-
+print("Если настройки верные, нажмите Enter. В ином случае введите любой символ")
+rubish=input()
+if rubish!="":
+    menu()
 # авторизация
 driver = webdriver.Chrome(executable_path='C:\webdrivers\chromedriver.exe')
 driver.get("https://cs.fail")
@@ -225,39 +234,44 @@ while 1:
     time.sleep(0.5)
     a= last_crash()
     if a < 1.2:
+        obmen=0
         if st1 != 0:
             click(1)
-            bal = balance()
-            zakup(bal, st1, type_of_bet)
+            zakup(balance(), st1, type_of_bet)
             click(2)
             start()
+            obmen=1
         #Лесенка
         else:
             if(stairs==1 and last_crash_3()<1.2):
+                print("Лесенка К НК К")
                 click(1)
-                bal = balance()
-                zakup(bal, stL, 2)
+                zakup(balance(), stL, 2)
                 click(2)
                 start()
+                zakup(balance(), 0.25, 2)
+                obmen = 1
             if(stairs==2 and last_crash_3()<1.2 and last_crash_5()<1.2):
+                print("Лесенка К НК К НК К")
                 click(1)
-                bal = balance()
-                zakup(bal, stL, 2)
+                zakup(balance(), stL, 2)
                 click(2)
                 start()
+                zakup(balance(), 0.25, 2)
+                obmen = 1
         a2 = last_crash_2()
         while a2 >= 1.2:
             a2= last_crash_2()
         a = last_crash()
         if a < 1.2:
-            if st2 != 0:
+            if (st2 != 0):
                 print("Двойной", st2)
-                if st1==0:
+                if (st1==0 or stairs==1 or stairs==2):
                     click(1)
-                bal = balance()
-                zakup(bal, st2, type_of_bet)
+                zakup(balance(), st2, type_of_bet)
                 click(2)
                 start()
+                obmen = 1
             a3 = last_crash_3()
             while a3 >= 1.2:
                 a3 = last_crash_3()
@@ -265,14 +279,15 @@ while 1:
             if a < 1.2:
                 if st3 != 0:
                     if st2==1:
+                        print("Закончились средства для ставок")
                         break
                     print("Тройной", st3)
                     if st2==0:
                         click(1)
-                    bal = balance()
-                    zakup(bal, st3, type_of_bet)
+                    zakup(balance(), st3, type_of_bet)
                     click(2)
                     start()
+                    obmen = 1
                 a4 = last_crash_4()
                 while a4 >= 1.2:
                     a4 = last_crash_4()
@@ -280,14 +295,15 @@ while 1:
                 if a < 1.2:
                     if st4 != 0:
                         if st3 == 1:
+                            print("Закончились средства для ставок")
                             break
                         print("Четверной", st4)
                         if st3==0:
                             click(1)
-                        bal = balance()
-                        zakup(bal, st4, type_of_bet)
+                        zakup(balance(), st4, type_of_bet)
                         click(2)
                         start()
+                        obmen = 1
                     a5 = last_crash_5()
                     while a5 >= 1.2:
                         a5 = last_crash_5()
@@ -296,13 +312,14 @@ while 1:
                         print("Пятерной краш")
                         if st5 != 0:
                             if st4 == 1:
+                                print("Закончились средства для ставок")
                                 break
                             if st4==0:
                                 click(1)
-                            bal = balance()
-                            zakup(bal, st5, type_of_bet)
+                            zakup(balance(), st5, type_of_bet)
                             click(2)
                             start()
+                            obmen = 1
                         a5 = prex5_last_crash()
                         while a5 >= 1.2:
                             a5 = prex5_last_crash()
@@ -320,6 +337,7 @@ while 1:
                 if st2 == 1: break
         else:
             if st1 == 1: break
-        click(1)
-        zakup(balance(),0.25,2)
-        click(1)
+        if obmen==1:
+            click(2)
+            zakup(balance(),0.25,2)
+            click(1)
