@@ -41,12 +41,10 @@ def autorisation():
     WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.CSS_SELECTOR, "[name='ratio']"))).clear()
     WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.CSS_SELECTOR, "[name='ratio']"))).send_keys("1.2")
     print("Авторизация пройдена\nРезультаты работы:")
-
 def click(n):
     for i in range(n):
         time.sleep(0.4)
         WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.CSS_SELECTOR, "[class='inventory__toggle'] > label"))).click()
-
 def crash_from_end(n):
     string = "[class='xhistory__content ng-star-inserted'] :nth-child(" + str(n) + ")"
     button = float(driver.find_element(By.CSS_SELECTOR, string).text[:-1])
@@ -119,13 +117,6 @@ def print_file():
     print("Сумма из вашего баланса, недоступная для ставок - ", podushka, "$")
     file.close()
     print("")
-def watch():
-    time.sleep(1)
-    try:
-        driver.find_element(By.CSS_SELECTOR, "[class='skins skins_for_inventory'] > div")
-        return True
-    except NoSuchElementException:
-        return False
 def change_file():
     type_of_bet = wait_int("Какой тип баланса будет использован?\n1. Динамический\n2. Статический\nВведите номер выбраного варианта ")
     number_of_crash = wait_int("Введите номер очередного краша, после которого хотите ставить")
@@ -163,14 +154,33 @@ def change_file():
 def menu():
     while True:
         print("Список доступных команд:"
-              "\n1.Просмотреть текущие настройки"
-              "\n2.Изменить настройки"
-              "\n3.Начать")
+              "\n1.Просмотреть текущие параметры ставок"
+              "\n2.Изменить текущие параметры ставок"
+              "\n3.Изменить данные акканта"
+              "\n4.Начать")
         punkt=wait_int("Введите номер выбраного вырианта ")
         if punkt==1:print_file()
         if punkt==2:change_file()
-        if punkt ==3:break
-
+        if punkt==3: change_logs()
+        if punkt ==4:break
+def update_logs():
+    file=open("loginsfail.txt",'r')
+    login=file.readline()
+    password=file.readline()
+    file.close()
+    return {'login': login, 'password': password}
+def change_logs():
+    file = open("loginsfail.txt", 'w')
+    file.write(input("Введите логин: "))
+    file.write(input("Введите пароль: "))
+    file.close()
+def watch():
+    time.sleep(1)
+    try:
+        driver.find_element(By.CSS_SELECTOR, "[class='skins skins_for_inventory'] > div")
+        return True
+    except NoSuchElementException:
+        return False
 try:
     menu()
     file=open("textfail.txt", 'r')
@@ -181,7 +191,8 @@ try:
     file.close()
     print("Текущие настройки:")
     print_file()
-    print("Если настройки верные, нажмите Enter. В ином случае введите любой символ")
+    print("Если настройки верные, нажмите Enter. В ином случае введите любой символ\n"
+          "ВНИМАНИЕ, ЕСЛИ ВЫ ЗАПУСКАЕТЕ ПРОГРАММУ ВПЕРВЫЕ, ТРЕБУЕТСЯ УКАЗАТЬ ДАННЫЕ АККАУНТА")
     rubish=input()
     if rubish!="":
         menu()
@@ -200,7 +211,7 @@ try:
     # options.add_argument("window-size=1920x1080")
     # driver = webdriver.Firefox(options=options, executable_path='C:\webdrivers\geckodriver')
     # driver.get("http://cs.fail")
-    id={'login':"povarenok005", 'password':"Razryad777"}
+    id=update_logs()
     autorisation()
 
     while 1:
