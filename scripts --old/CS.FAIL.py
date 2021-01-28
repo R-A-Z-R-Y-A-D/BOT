@@ -9,7 +9,7 @@ print("Введите любой символ, если хотите настр�
 nastr=input()
 if nastr=="":
     time.sleep(1)
-    file=open("test.txt", 'r')
+    file=open("../textfiles/textfail.txt", 'r')
     st1=float(file.readline()); st2=float(file.readline()); st3=float(file.readline()); st4=float(file.readline()); st5=float(file.readline()); choise=int(file.readline())
     file.close()
 else:
@@ -44,7 +44,7 @@ else:
     print("2. Статический")
     choise=int(input())
 
-    file=open("test.txt", 'w')
+    file=open("../textfiles/textfail.txt", 'w')
     file.write(str(st1) + "\n"); file.write(str(st2) + "\n"); file.write(str(st3) + "\n"); file.write(str(st4) + "\n"); file.write(str(st5) + "\n"); file.write(str(choise) + "\n")
     file.close()
 
@@ -59,7 +59,7 @@ print("Введите несгораемую сумму:")
 podushka=float(input())
 
 # авторизация
-driver = webdriver.Chrome(executable_path='C:\webdrivers\chromedriver.exe')
+driver = webdriver.Chrome()
 driver.get("https://cs.fail")
 
 def autorisation():
