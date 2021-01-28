@@ -1,4 +1,4 @@
-import os
+# import os
 import time
 from selenium import webdriver
 from time import gmtime, strftime
