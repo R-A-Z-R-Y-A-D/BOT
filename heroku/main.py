@@ -13,7 +13,7 @@ try:
     type = [0]
 
     def settings():
-        file = open("test.txt", 'r')
+        file = open("heroku/test.txt", 'r')
         print("Текущие настройки бота:\n")
         for i in range(5):
             perc[i] = float(file.readline())
@@ -43,7 +43,7 @@ try:
             print("1. Динамический")
             print("2. Статический")
             type[0] = int(input())
-            file = open("test.txt", 'w')
+            file = open("heroku/test.txt", 'w')
             for i in range(5):
                 new[i] = round(float(new[i]) / 100, 2)
                 file.write(str(new[i]) + "\n")
