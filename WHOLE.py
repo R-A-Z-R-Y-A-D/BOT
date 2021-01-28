@@ -1,8 +1,13 @@
+import os
 import time
 from selenium import webdriver
+from time import gmtime, strftime
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.firefox.options import Options
+from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.support import expected_conditions as EC
+
 def wait_int(str=""):
     print(str)
     while True:
@@ -21,117 +26,64 @@ def wait_float(str=""):
         except ValueError:
             print("uncorrect syntax")
 def autorisation():
-    WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.CSS_SELECTOR, "body > app-root > app-wrapper > div > div.aside.aside_game.ng-tns-c79-0.ng-trigger.ng-trigger-gameSidebarAnimation > div > div > app-inventory > div > div > div.empty__login > a"))).click()
-    # ввод логина
-    WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.CSS_SELECTOR, "#steamAccountName"))).send_keys("povarenok005")
-    # ввод пароля
-    WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.CSS_SELECTOR, "#steamPassword"))).send_keys("Razryad777")
-    # войти
-    WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.CSS_SELECTOR, "#imageLogin"))).click()
-    # крестик
-    WebDriverWait(driver, 120).until(EC.element_to_be_clickable((By.CSS_SELECTOR, "body > app-root > app-wrapper > div > div.container.container_main.ng-tns-c79-0.ng-trigger.ng-trigger-containerAnimation > app-chat > div > div.aside__toggle > button"))).click()
-    # ввод ставки
-    WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.CSS_SELECTOR, "body > app-root > app-wrapper > div > div.container.container_main.ng-tns-c79-0.ng-trigger.ng-trigger-containerAnimation > div > app-crash-home > div > div.crash__controller > div.crash__information > app-crash-editor > div.information__coeff.ng-star-inserted > div.information__input.form.form_theme_default > input"))).clear()
-    WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.CSS_SELECTOR, "body > app-root > app-wrapper > div > div.container.container_main.ng-tns-c79-0.ng-trigger.ng-trigger-containerAnimation > div > app-crash-home > div > div.crash__controller > div.crash__information > app-crash-editor > div.information__coeff.ng-star-inserted > div.information__input.form.form_theme_default > input"))).send_keys("1.2")
-    # выключить звук
-    WebDriverWait(driver, 120).until(EC.element_to_be_clickable((By.CSS_SELECTOR, "body > app-root > app-wrapper > div > app-sidebar > div > div.sidebar__content > div.sidebar__volume.volume.volume_header.volume_on"))).click()
-    # убрать анимацию
-    WebDriverWait(driver, 120).until(EC.element_to_be_clickable((By.CSS_SELECTOR, "body > app-root > app-wrapper > div > app-sidebar > div > div.sidebar__content > app-settings > div"))).click()
-    WebDriverWait(driver, 120).until(EC.element_to_be_clickable((By.CSS_SELECTOR, "body > app-root > app-wrapper > app-modals-container > app-modal > div > div > div > div > div:nth-child(3)"))).click()
-    WebDriverWait(driver, 120).until(EC.element_to_be_clickable((By.CSS_SELECTOR, "body > app-root > app-wrapper > app-modals-container > app-modal > div > div > button"))).click()
-    # нажать книпку в наличии
-def last_crash():
-    WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.CSS_SELECTOR, "body > app-root > app-wrapper > div > div.aside.aside_game.ng-tns-c79-0.ng-trigger.ng-trigger-gameSidebarAnimation > div > app-crash-sidebar > div.crash__history.xhistory.xhistory_home > div > div > a:nth-child(1)")))
-    savelast=driver.find_element(By.CSS_SELECTOR, "body > app-root > app-wrapper > div > div.aside.aside_game.ng-tns-c79-0.ng-trigger.ng-trigger-gameSidebarAnimation > div > app-crash-sidebar > div.crash__history.xhistory.xhistory_home > div > div > a:nth-child(1)")
-    lastcrash=savelast.text
-    lastcrash=float(lastcrash[:-1])
-    return lastcrash
-def last_crash_2():
-    WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.CSS_SELECTOR, "body > app-root > app-wrapper > div > div.aside.aside_game.ng-tns-c79-0.ng-trigger.ng-trigger-gameSidebarAnimation > div > app-crash-sidebar > div.crash__history.xhistory.xhistory_home > div > div > a:nth-child(2)")))
-    saveprelast=driver.find_element(By.CSS_SELECTOR, "body > app-root > app-wrapper > div > div.aside.aside_game.ng-tns-c79-0.ng-trigger.ng-trigger-gameSidebarAnimation > div > app-crash-sidebar > div.crash__history.xhistory.xhistory_home > div > div > a:nth-child(2)")
-    prelastcrash=saveprelast.text
-    prelastcrash=float(prelastcrash[:-1])
-    return prelastcrash
-def last_crash_3():
-    WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.CSS_SELECTOR, "body > app-root > app-wrapper > div > div.aside.aside_game.ng-tns-c79-0.ng-trigger.ng-trigger-gameSidebarAnimation > div > app-crash-sidebar > div.crash__history.xhistory.xhistory_home > div > div > a:nth-child(3)")))
-    saveprelast = driver.find_element(By.CSS_SELECTOR, "body > app-root > app-wrapper > div > div.aside.aside_game.ng-tns-c79-0.ng-trigger.ng-trigger-gameSidebarAnimation > div > app-crash-sidebar > div.crash__history.xhistory.xhistory_home > div > div > a:nth-child(3)")
-    prelastcrash = saveprelast.text
-    prelastcrash = float(prelastcrash[:-1])
-    return prelastcrash
-def last_crash_4():
-    WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.CSS_SELECTOR, "body > app-root > app-wrapper > div > div.aside.aside_game.ng-tns-c79-0.ng-trigger.ng-trigger-gameSidebarAnimation > div > app-crash-sidebar > div.crash__history.xhistory.xhistory_home > div > div > a:nth-child(4)")))
-    saveprelast = driver.find_element(By.CSS_SELECTOR, "body > app-root > app-wrapper > div > div.aside.aside_game.ng-tns-c79-0.ng-trigger.ng-trigger-gameSidebarAnimation > div > app-crash-sidebar > div.crash__history.xhistory.xhistory_home > div > div > a:nth-child(4)")
-    prelastcrash = saveprelast.text
-    prelastcrash = float(prelastcrash[:-1])
-    return prelastcrash
-def last_crash_5():
-    WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.CSS_SELECTOR, "body > app-root > app-wrapper > div > div.aside.aside_game.ng-tns-c79-0.ng-trigger.ng-trigger-gameSidebarAnimation > div > app-crash-sidebar > div.crash__history.xhistory.xhistory_home > div > div > a:nth-child(5)")))
-    saveprelast = driver.find_element(By.CSS_SELECTOR, "body > app-root > app-wrapper > div > div.aside.aside_game.ng-tns-c79-0.ng-trigger.ng-trigger-gameSidebarAnimation > div > app-crash-sidebar > div.crash__history.xhistory.xhistory_home > div > div > a:nth-child(5)")
-    prelastcrash = saveprelast.text
-    prelastcrash = float(prelastcrash[:-1])
-    return prelastcrash
-def prex5_last_crash():
-    WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.CSS_SELECTOR, "body > app-root > app-wrapper > div > div.aside.aside_game.ng-tns-c79-0.ng-trigger.ng-trigger-gameSidebarAnimation > div > app-crash-sidebar > div.crash__history.xhistory.xhistory_home > div > div > a:nth-child(6)")))
-    saveprelast = driver.find_element(By.CSS_SELECTOR, "body > app-root > app-wrapper > div > div.aside.aside_game.ng-tns-c79-0.ng-trigger.ng-trigger-gameSidebarAnimation > div > app-crash-sidebar > div.crash__history.xhistory.xhistory_home > div > div > a:nth-child(6)")
-    prelastcrash = saveprelast.text
-    prelastcrash = float(prelastcrash[:-1])
-    return prelastcrash
-def click(n):
+    WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.CSS_SELECTOR, "[class='btn btn_size_2 btn_success2']"))).click()
+    WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.CSS_SELECTOR, "[id='steamAccountName']"))).send_keys(id['login'])
+    WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.CSS_SELECTOR, "[id='steamPassword']"))).send_keys(id['password'])
+    WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.CSS_SELECTOR, "[id='imageLogin']"))).click()
+    print("Введите код Steam Guard:")
+    WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.CSS_SELECTOR, "[id='twofactorcode_entry']"))).send_keys(input())
+    WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.CSS_SELECTOR, "[id='login_twofactorauth_buttonset_entercode'] :nth-child(1)"))).click()
+    WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.CSS_SELECTOR, "[class='xbutton xbutton_icon xbutton_size_x34 xbutton_toggle']"))).click()
+    WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.CSS_SELECTOR, "[class='icon volume_icon']"))).click()
+    WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.CSS_SELECTOR, "[class='icon icon_settings']"))).click()
+    WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.CSS_SELECTOR, "[class='control__label']"))).click()
+    WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.CSS_SELECTOR, "[class='xmodal__close']"))).click()
+    WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.CSS_SELECTOR, "[name='ratio']"))).clear()
+    WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.CSS_SELECTOR, "[name='ratio']"))).send_keys("1.2")
+    print("Авторизация пройдена\nРезультаты работы:")
 
-    for i in range (n):
-        # выбрать все
-        WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.CSS_SELECTOR, "body > app-root > app-wrapper > div > div.aside.aside_game.ng-tns-c79-0.ng-trigger.ng-trigger-gameSidebarAnimation > div > div > app-inventory > div > div.inventory__head > div.inventory__toggle > label > div"))).click()
+def click(n):
+    for i in range(n):
         time.sleep(0.4)
+        WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.CSS_SELECTOR, "[class='inventory__toggle'] > label"))).click()
+
+def crash_from_end(n):
+    string = "[class='xhistory__content ng-star-inserted'] :nth-child(" + str(n) + ")"
+    button = float(driver.find_element(By.CSS_SELECTOR, string).text[:-1])
+    return button
 def balance():
-    savebalance = driver.find_element(By.CSS_SELECTOR, "body > app-root > app-wrapper > div > div.aside.aside_game.ng-tns-c79-0.ng-trigger.ng-trigger-gameSidebarAnimation > div > div > app-inventory > div > div.inventory__head > div.inventory__balance > div.inventory__count.symbol_usd")
-    balance = float(savebalance.text)
-    savevybrano = driver.find_element(By.CSS_SELECTOR, "body > app-root > app-wrapper > div > div.aside.aside_game.ng-tns-c79-0.ng-trigger.ng-trigger-gameSidebarAnimation > div > div > app-inventory > div > div.inventory__head > div.inventory__selected > div.inventory__count.symbol_usd")
-    vybrano = float(savevybrano.text)
-    vsego=round((balance+vybrano), 2)
-    return vsego
+    save = driver.find_elements(By.CSS_SELECTOR, "[class='inventory__count symbol_usd']")
+    vyb = float(save[0].text)
+    bal = float(save[1].text)
+    return round(bal + vyb,2)
 def zakup(bal, bet, type):
     if type==1:
         if round((bal-podushka) * bet)<0.25:
             zakup(balance(),0.25,2)
             return 0
-        # магазин скинов
-        WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.CSS_SELECTOR, "body > app-root > app-wrapper > div > div.aside.aside_game.ng-tns-c79-0.ng-trigger.ng-trigger-gameSidebarAnimation > div > div > app-inventory > div > div.inventory__footer > button"))).click()
-        time.sleep(0.8)
-        # цена
-        WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.CSS_SELECTOR, "body > app-root > app-wrapper > div > div.aside.aside_game.ng-tns-c79-0.ng-trigger.ng-trigger-gameSidebarAnimation > div > div > app-shop > div > div.shop__filters.filters.filter_shop > div.filter.filter_price > input"))).clear()
-        WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.CSS_SELECTOR, "body > app-root > app-wrapper > div > div.aside.aside_game.ng-tns-c79-0.ng-trigger.ng-trigger-gameSidebarAnimation > div > div > app-shop > div > div.shop__filters.filters.filter_shop > div.filter.filter_price > input"))).send_keys(str(round(((bal-podushka) * bet), 2)))
-        # первый предмет
-        time.sleep(0.8)
-        WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.CSS_SELECTOR, "body > app-root > app-wrapper > div > div.aside.aside_game.ng-tns-c79-0.ng-trigger.ng-trigger-gameSidebarAnimation > div > div > app-shop > div > div.window__inventory.ng-star-inserted > div > div > div:nth-child(1)"))).click()
-        # подтвердить
-        time.sleep(0.8)
-        WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.CSS_SELECTOR, "body > app-root > app-wrapper > div > div.aside.aside_game.ng-tns-c79-0.ng-trigger.ng-trigger-gameSidebarAnimation > div > div > app-shop > div > div.shop__controllers > div.shop__buy > button"))).click()
-        # крестик
-        time.sleep(0.8)
-        WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.CSS_SELECTOR, "body > app-root > app-wrapper > div > div.aside.aside_game.ng-tns-c79-0.ng-trigger.ng-trigger-gameSidebarAnimation > div > div > app-shop > div > div.shop__head > div.shop__close"))).click()
+        WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.CSS_SELECTOR, "[class='btn btn_block btn_size_2 btn_default4']"))).click()
+        time.sleep(1)
+        WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.CSS_SELECTOR, "[type='number']"))).clear()
+        WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.CSS_SELECTOR, "[type='number']"))).send_keys(str(round(((bal-podushka) * bet), 2)))
+        time.sleep(1)
+        WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.CSS_SELECTOR, "[class='skins skins_for_window'] :nth-child(1)"))).click()
+        WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.CSS_SELECTOR, "[class='xbutton xbutton_block xbutton_buy']"))).click()
+        WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.CSS_SELECTOR, "[class='shop__close']"))).click()
         return 1
     if type == 2:
         if (bet>(bal-podushka)): return 0
         else:
-            # магазин скинов
-            WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.CSS_SELECTOR,"body > app-root > app-wrapper > div > div.aside.aside_game.ng-tns-c79-0.ng-trigger.ng-trigger-gameSidebarAnimation > div > div > app-inventory > div > div.inventory__footer > button"))).click()
-            # цена
-            WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.CSS_SELECTOR,"body > app-root > app-wrapper > div > div.aside.aside_game.ng-tns-c79-0.ng-trigger.ng-trigger-gameSidebarAnimation > div > div > app-shop > div > div.shop__filters.filters.filter_shop > div.filter.filter_price > input"))).clear()
-            WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.CSS_SELECTOR,"body > app-root > app-wrapper > div > div.aside.aside_game.ng-tns-c79-0.ng-trigger.ng-trigger-gameSidebarAnimation > div > div > app-shop > div > div.shop__filters.filters.filter_shop > div.filter.filter_price > input"))).send_keys(str(round((bet), 2)))
-            # первый предмет
-            time.sleep(0.8)
-            WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.CSS_SELECTOR,"body > app-root > app-wrapper > div > div.aside.aside_game.ng-tns-c79-0.ng-trigger.ng-trigger-gameSidebarAnimation > div > div > app-shop > div > div.window__inventory.ng-star-inserted > div > div > div:nth-child(1)"))).click()
-            # подтвердить
-            time.sleep(0.8)
-            WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.CSS_SELECTOR,"body > app-root > app-wrapper > div > div.aside.aside_game.ng-tns-c79-0.ng-trigger.ng-trigger-gameSidebarAnimation > div > div > app-shop > div > div.shop__controllers > div.shop__buy > button"))).click()
-            # крестик
-            WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.CSS_SELECTOR,"body > app-root > app-wrapper > div > div.aside.aside_game.ng-tns-c79-0.ng-trigger.ng-trigger-gameSidebarAnimation > div > div > app-shop > div > div.shop__head > div.shop__close"))).click()
+            WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.CSS_SELECTOR, "[class='btn btn_block btn_size_2 btn_default4']"))).click()
+            time.sleep(1)
+            WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.CSS_SELECTOR, "[type='number']"))).clear()
+            WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.CSS_SELECTOR, "[type='number']"))).send_keys(str(round((bet), 2)))
+            time.sleep(1)
+            WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.CSS_SELECTOR, "[class='skins skins_for_window'] :nth-child(1)"))).click()
+            WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.CSS_SELECTOR, "[class='xbutton xbutton_block xbutton_buy']"))).click()
+            WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.CSS_SELECTOR, "[class='shop__close']"))).click()
             return 1
 def start():
-    # начать
-    time.sleep(0.8)
-    driver.find_element(By.CSS_SELECTOR, "body > app-root > app-wrapper > div > div.container.container_main.ng-tns-c79-0.ng-trigger.ng-trigger-containerAnimation > div > app-crash-home > div > div.crash__controller > div.crash__information > div > button").click()
-    driver.find_element(By.CSS_SELECTOR, "body > app-root > app-wrapper > div > div.container.container_main.ng-tns-c79-0.ng-trigger.ng-trigger-containerAnimation > div > app-crash-home > div > div.crash__controller > div.crash__information > div > button").click()
+    WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.CSS_SELECTOR, "[class='btn btn_block btn_size_create btn_purple ng-star-inserted']"))).click()
 def print_file():
     file=open("textfail.txt", 'r')
     podushka = float(file.readline())
@@ -167,6 +119,13 @@ def print_file():
     print("Сумма из вашего баланса, недоступная для ставок - ", podushka, "$")
     file.close()
     print("")
+def watch():
+    time.sleep(1)
+    try:
+        driver.find_element(By.CSS_SELECTOR, "[class='skins skins_for_inventory'] > div")
+        return True
+    except NoSuchElementException:
+        return False
 def change_file():
     type_of_bet = wait_int("Какой тип баланса будет использован?\n1. Динамический\n2. Статический\nВведите номер выбраного варианта ")
     number_of_crash = wait_int("Введите номер очередного краша, после которого хотите ставить")
@@ -212,132 +171,148 @@ def menu():
         if punkt==2:change_file()
         if punkt ==3:break
 
-menu()
-file=open("textfail.txt", 'r')
-podushka=float(file.readline())
-stairs=int(file.readline())
-stL=float(file.readline())
-type_of_bet = int(file.readline());st1=float(file.readline()); st2=float(file.readline()); st3=float(file.readline()); st4=float(file.readline()); st5=float(file.readline())
-file.close()
-print("Текущие настройки:")
-print_file()
-print("Если настройки верные, нажмите Enter. В ином случае введите любой символ")
-rubish=input()
-if rubish!="":
+try:
     menu()
-# авторизация
-driver = webdriver.Chrome(executable_path='C:\webdrivers\chromedriver.exe')
-driver.get("https://cs.fail")
-autorisation()
+    file=open("textfail.txt", 'r')
+    podushka=float(file.readline())
+    stairs=int(file.readline())
+    stL=float(file.readline())
+    type_of_bet = int(file.readline());st1=float(file.readline()); st2=float(file.readline()); st3=float(file.readline()); st4=float(file.readline()); st5=float(file.readline())
+    file.close()
+    print("Текущие настройки:")
+    print_file()
+    print("Если настройки верные, нажмите Enter. В ином случае введите любой символ")
+    rubish=input()
+    if rubish!="":
+        menu()
+    # авторизация
+    chrome_options = webdriver.ChromeOptions()
+    chrome_options.add_argument("--headless")
+    chrome_options.add_argument("--disable-dev-shm-usage")
+    chrome_options.add_argument("--no-sandbox")
+    chrome_options.add_argument("window-size=1920x1080")
+    driver = webdriver.Chrome(options=chrome_options, executable_path='C:\webdrivers\chromedriver.exe')
+    driver.get("https://cs.fail")
+    # options = Options()
+    # options.add_argument("--headless")
+    # options.add_argument("--disable-dev-shm-usage")
+    # options.add_argument("--no-sandbox")
+    # options.add_argument("window-size=1920x1080")
+    # driver = webdriver.Firefox(options=options, executable_path='C:\webdrivers\geckodriver')
+    # driver.get("http://cs.fail")
+    id={'login':"povarenok005", 'password':"Razryad777"}
+    autorisation()
 
-while 1:
-    time.sleep(0.5)
-    a= last_crash()
-    if a < 1.2:
-        obmen=0
-        if st1 != 0:
-            click(1)
-            zakup(balance(), st1, type_of_bet)
-            click(2)
-            start()
-            obmen=1
-        #Лесенка
-        else:
-            if(stairs==1 and last_crash_3()<1.2):
-                print("Лесенка К НК К")
-                click(1)
-                zakup(balance(), stL, 2)
-                click(2)
-                start()
-                zakup(balance(), 0.25, 2)
-                obmen = 1
-            if(stairs==2 and last_crash_3()<1.2 and last_crash_5()<1.2):
-                print("Лесенка К НК К НК К")
-                click(1)
-                zakup(balance(), stL, 2)
-                click(2)
-                start()
-                zakup(balance(), 0.25, 2)
-                obmen = 1
-        a2 = last_crash_2()
-        while a2 >= 1.2:
-            a2= last_crash_2()
-        a = last_crash()
+    while 1:
+        time.sleep(0.5)
+        a= crash_from_end(1)
         if a < 1.2:
-            if (st2 != 0):
-                print("Двойной", st2)
-                if (st1==0 or stairs==1 or stairs==2):
-                    click(1)
-                zakup(balance(), st2, type_of_bet)
+            obmen=0
+            if st1 != 0:
+                click(1)
+                zakup(balance(), st1, type_of_bet)
                 click(2)
                 start()
-                obmen = 1
-            a3 = last_crash_3()
-            while a3 >= 1.2:
-                a3 = last_crash_3()
-            a = last_crash()
+                obmen=1
+            #Лесенка
+            else:
+                if(stairs==1 and crash_from_end(3)<1.2):
+                    print("Лесенка К НК К")
+                    click(1)
+                    zakup(balance(), stL, 2)
+                    click(2)
+                    start()
+                    zakup(balance(), 0.25, 2)
+                    obmen = 1
+                if(stairs==2 and crash_from_end(3)<1.2 and crash_from_end(5)<1.2):
+                    print("Лесенка К НК К НК К")
+                    click(1)
+                    zakup(balance(), stL, 2)
+                    click(2)
+                    start()
+                    zakup(balance(), 0.25, 2)
+                    obmen = 1
+            a2 = crash_from_end(2)
+            while a2 >= 1.2:
+                a2= crash_from_end(2)
+            a = crash_from_end(1)
             if a < 1.2:
-                if st3 != 0:
-                    if st2==1:
-                        print("Закончились средства для ставок")
-                        break
-                    print("Тройной", st3)
-                    if st2==0:
+                if (st2 != 0):
+                    print("Двойной", st2)
+                    if (st1==0 or stairs==1 or stairs==2):
                         click(1)
-                    zakup(balance(), st3, type_of_bet)
+                    zakup(balance(), st2, type_of_bet)
                     click(2)
                     start()
                     obmen = 1
-                a4 = last_crash_4()
-                while a4 >= 1.2:
-                    a4 = last_crash_4()
-                a = last_crash()
+                a3 = crash_from_end(3)
+                while a3 >= 1.2:
+                    a3 = crash_from_end(3)
+                a = crash_from_end(1)
                 if a < 1.2:
-                    if st4 != 0:
-                        if st3 == 1:
+                    if st3 != 0:
+                        if st2==1:
                             print("Закончились средства для ставок")
                             break
-                        print("Четверной", st4)
-                        if st3==0:
+                        print("Тройной", st3)
+                        if st2==0:
                             click(1)
-                        zakup(balance(), st4, type_of_bet)
+                        zakup(balance(), st3, type_of_bet)
                         click(2)
                         start()
                         obmen = 1
-                    a5 = last_crash_5()
-                    while a5 >= 1.2:
-                        a5 = last_crash_5()
-                    a = last_crash()
+                    a4 = crash_from_end(4)
+                    while a4 >= 1.2:
+                        a4 = crash_from_end(4)
+                    a = crash_from_end(1)
                     if a < 1.2:
-                        print("Пятерной краш")
-                        if st5 != 0:
-                            if st4 == 1:
+                        if st4 != 0:
+                            if st3 == 1:
                                 print("Закончились средства для ставок")
                                 break
-                            if st4==0:
+                            print("Четверной", st4)
+                            if st3==0:
                                 click(1)
-                            zakup(balance(), st5, type_of_bet)
+                            zakup(balance(), st4, type_of_bet)
                             click(2)
                             start()
                             obmen = 1
-                        a5 = prex5_last_crash()
+                        a5 = crash_from_end(5)
                         while a5 >= 1.2:
-                            a5 = prex5_last_crash()
-                        a = last_crash()
+                            a5 = crash_from_end(5)
+                        a = crash_from_end(1)
                         if a < 1.2:
-                            print("Шестерной краш")
-                            break
+                            print("Пятерной краш")
+                            if st5 != 0:
+                                if st4 == 1:
+                                    print("Закончились средства для ставок")
+                                    break
+                                if st4==0:
+                                    click(1)
+                                zakup(balance(), st5, type_of_bet)
+                                click(2)
+                                start()
+                                obmen = 1
+                            a5 = crash_from_end(6)
+                            while a5 >= 1.2:
+                                a5 = crash_from_end(6)
+                            a = crash_from_end(1)
+                            if a < 1.2:
+                                print("Шестерной краш")
+                                break
+                            else:
+                                if st5 == 1: break
                         else:
-                            if st5 == 1: break
+                            if st4 == 1: break
                     else:
-                        if st4 == 1: break
+                        if st3 == 1: break
                 else:
-                    if st3 == 1: break
+                    if st2 == 1: break
             else:
-                if st2 == 1: break
-        else:
-            if st1 == 1: break
-        if obmen==1:
-            click(2)
-            zakup(balance(),0.25,2)
-            click(1)
+                if st1 == 1: break
+            if obmen==1:
+                click(2)
+                zakup(balance(),0.25,2)
+                click(1)
+finally:
+    driver.quit()
