@@ -164,13 +164,13 @@ def menu():
         if punkt==3: change_logs()
         if punkt ==4:break
 def update_logs():
-    file=open("loginsfail.txt",'r')
+    file=open("textfiles/logins.txt",'r')
     login=file.readline()
     password=file.readline()
     file.close()
     return {'login': login, 'password': password}
 def change_logs():
-    file = open("loginsfail.txt", 'w')
+    file = open("textfiles/logins.txt", 'w')
     file.write(input("Введите логин: "))
     file.write(input("Введите пароль: "))
     file.close()
