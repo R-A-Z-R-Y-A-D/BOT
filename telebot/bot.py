@@ -257,6 +257,7 @@ def primary():
         def send_welcome(message):
             bot.send_message(message.chat.id, "Бот завершил работу")
         driver.quit()
+        bot.polling(none_stop=True, interval=0)
 
 @bot.message_handler(commands=['start'])
 def send_welcome(message):
