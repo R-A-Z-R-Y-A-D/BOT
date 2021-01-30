@@ -2,7 +2,6 @@ import telebot
 import os
 import time
 from selenium import webdriver
-from time import strftime
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.common.exceptions import NoSuchElementException
