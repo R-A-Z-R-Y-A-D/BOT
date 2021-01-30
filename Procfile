@@ -1,1 +1,1 @@
-worker: python heroku/main.py
+worker: python telebot/bot.py
