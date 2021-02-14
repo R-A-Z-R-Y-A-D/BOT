@@ -29,9 +29,9 @@ class StopProgramm(Exception):
 class CSGO_BAND:
 
     chrome_options = webdriver.ChromeOptions()
-    # chrome_options.add_argument("--headless")
-    # chrome_options.add_argument("--disable-dev-shm-usage")
-    # chrome_options.add_argument("--no-sandbox")
+    chrome_options.add_argument("--headless")
+    chrome_options.add_argument("--disable-dev-shm-usage")
+    chrome_options.add_argument("--no-sandbox")
     chrome_options.add_argument("--mute-audio")
     chrome_options.add_argument("--incognito")
     chrome_options.add_argument("window-size=1920x1080")
@@ -46,7 +46,7 @@ class CSGO_BAND:
         'code': ''
     }
 
-    def __init__(self, login='', password='', perc=[0, 0.1, 0.6, 0.95, 1], podushka=0, type=1, chat_id=''):
+    def __init__(self, login='', password='', perc=[0, 0.05, 0.3, 0.95, 1], podushka=0, type=1, chat_id=''):
         self.data['login'] = login
         self.data['password'] = password
         self.data['perc'] = perc
@@ -312,7 +312,7 @@ class CS_FAIL:
 
     def pre_autorisation(self):
         try:
-            self.driver.get("https://csgo.band/")
+            self.driver.get("https://cs.fail/")
             time.sleep(2)
             WebDriverWait(self.driver, 5).until(
                 EC.element_to_be_clickable((By.CSS_SELECTOR, "[class='btn btn_size_2 btn_success2']"))).click()
@@ -322,7 +322,7 @@ class CS_FAIL:
                 EC.element_to_be_clickable((By.CSS_SELECTOR, "[id='steamPassword']"))).send_keys(self.data['password'])
             WebDriverWait(self.driver, 5).until(EC.element_to_be_clickable((By.CSS_SELECTOR, "[id='imageLogin']"))).click()
             try:
-                WebDriverWait(self.driver, 7).until(EC.element_to_be_clickable((By.CSS_SELECTOR, "[id='error_display']")))
+                WebDriverWait(self.driver, 5).until(EC.element_to_be_clickable((By.CSS_SELECTOR, "[id='error_display']")))
                 bot.send_message(self.data['id'],
                                  "Вы указали неверные данные Steam, либо при попытке входа появляется CAPTCHA\nПроверьте правильность логина и пароля командой /steam_data")
                 self.stop_prog()
@@ -341,7 +341,7 @@ class CS_FAIL:
                 self.stop_prog()
             while True:
                 try:
-                    WebDriverWait(self.driver, 7).until(EC.element_to_be_clickable((By.CSS_SELECTOR, "[id='login_twofactorauth_buttonset_incorrectcode']")))
+                    WebDriverWait(self.driver, 5).until(EC.element_to_be_clickable((By.CSS_SELECTOR, "[id='login_twofactorauth_buttonset_incorrectcode']")))
                     enter(self)
                 except TimeoutException:
                     break
@@ -409,15 +409,15 @@ class CS_FAIL:
     def do_afull_process_dynamic(self, num_of_perc):
         self.click(1)
         self.change(self.data['perc'][num_of_perc], self.get_balance())
-        self.click(1)
-        time.sleep(3)
+        self.click(2)
+        time.sleep(1)
         self.make_bet()
 
     def do_afull_process_static(self, num_of_perc, bal):
         self.click(1)
         self.change(self.data['perc'][num_of_perc], bal)
-        self.click(1)
-        time.sleep(3)
+        self.click(2)
+        time.sleep(1)
         self.make_bet()
 
     def wait_crash(self, n):
@@ -590,7 +590,7 @@ def start_bot(message):
         except StopProgramm:
             try:
                 del users[message.chat.id]
-                bot.send_message(message.chat.id, "Бот остановлен")
+                bot.send_message(message.chat.id, "Бот остановлен\nПерезапустите его командой /start")
             except KeyError:
                 pass
     else:
@@ -686,9 +686,12 @@ def change_defolt(message):
 
 def code_add(message):
     try:
-        users[message.chat.id].data['code'] = message.text
-        users[message.chat.id].autorisation()
-        users[message.chat.id].autorisation_check()
+        if message.text.lower() == "стоп":
+            users[message.chat.id].stop_prog()
+        else:
+            users[message.chat.id].data['code'] = message.text
+            users[message.chat.id].autorisation()
+            users[message.chat.id].autorisation_check()
     except Exception:
         try:
             del users[message.chat.id]
