@@ -1,11 +1,8 @@
-import os
 import csv
 import telebot
 from telebot import types
 import time
-import requests
 from selenium import webdriver
-from time import gmtime, strftime
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
