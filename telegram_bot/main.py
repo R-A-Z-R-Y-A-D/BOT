@@ -10,16 +10,34 @@ from selenium.webdriver.firefox.options import Options
 from selenium.common.exceptions import NoSuchElementException
 from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.support import expected_conditions as EC
-
-token = '1622405338:AAHkL_FBzftlUe2DYtA-cQQ9JRKSt_qpmCc'
+import openpyxl
+token='1609896509:AAHFFntL5mCRpbRNwtb9mLwOU7zj7XrIsWo'
 admin_id = 830130638
 bot = telebot.TeleBot(token, parse_mode="HTML")
 hide_reply_keyboard = types.ReplyKeyboardRemove()
-
 login = ''
 password = ''
 users = {}
-
+book = openpyxl.open("base.xlsx")#открытие файла
+base = book.active#открытие рабочего листа файла (по умолчанию - первый)
+def find_user_in_base (rubish): #возвращает номер строки в результате поиска пользователя по id
+    for row in range(1,base.max_row+1):
+        if str(base[row][0].value) == str(rubish):
+            return row
+        elif row == base.max_row:
+            return (0)
+def excel_start_settings(): #подписывает первую строку таблицы (названия столбцов)
+    base['A1'].value='id пользователя'
+    base['b1'].value='Логин Steam'
+    base['c1'].value='Пароль Steam'
+    base['d1'].value ='Статус оплаты'
+    base['e1'].value ='Тип баланса S-статический; D-динамический'
+    base['f1'].value = 'Ставки после крашей (1-5)'
+    base.merge_cells('f1:j1') #объединение ячеек для крашей (только подпись)
+    base['k1'].value ='Участие в лесенках (0-нет, 1-КНК, 2-КНКНК)'
+    base['l1'].value ='Фикс. ставка после лесенки'
+    base['m1'].value ='Несгораемый баланс'
+    base['n1'].value ='Выбранный сайт'
 class StopProgramm(Exception):
     pass
 
@@ -36,23 +54,24 @@ class CSGO_BAND:
     data = {
         'login': '',
         'password': '',
-        'perc': [0, 0, 0, 0, 0],
+        'bets': [0, 0, 0, 0, 0],
         'podushka': 0,
         'type': 1,
         'id': '',
         'code': ''
     }
 
-    def __init__(self, login='', password='', perc=[0, 0.05, 0.3, 0.95, 1], podushka=0, type=1, chat_id=''):
+    def __init__(self, login='', password='', bets=[0, 0.05, 0.3, 0.95, 1], podushka=0, type=1, chat_id=''):
         self.data['login'] = login
         self.data['password'] = password
-        self.data['perc'] = perc
+        self.data['bets'] = bets
         self.data['podushka'] = podushka
         self.data['type'] = type
         self.data['id'] = chat_id
         self.driver = webdriver.Chrome(options=CSGO_BAND.chrome_options)
 
     def stop_prog(self):
+        book.close()
         self.driver.quit()
         raise StopProgramm
 
@@ -116,7 +135,7 @@ class CSGO_BAND:
 
     def autorisation_check(self):
         save=0
-        for i in self.data['perc']:
+        for i in self.data['bets']:
             if i > 0:
                 save=i
                 break
@@ -166,16 +185,16 @@ class CSGO_BAND:
         except Exception:
             self.stop_prog()
 
-    def do_afull_process_dynamic(self, num_of_perc):
+    def do_afull_process_dynamic(self, num_of_bets):
         self.click(1)
-        self.change(self.data['perc'][num_of_perc], self.get_balance())
+        self.change(self.data['bets'][num_of_bets], self.get_balance())
         self.click(1)
         time.sleep(3)
         self.make_bet()
 
-    def do_afull_process_static(self, num_of_perc, bal):
+    def do_afull_process_static(self, num_of_bets, bal):
         self.click(1)
-        self.change(self.data['perc'][num_of_perc], bal)
+        self.change(self.data['bets'][num_of_bets], bal)
         self.click(1)
         time.sleep(3)
         self.make_bet()
@@ -195,23 +214,23 @@ class CSGO_BAND:
             while True:
                 crash_1 = self.get_crash(1)
                 if crash_1 < 1.2:
-                    if self.data['perc'][0] != 0: self.do_afull_process_dynamic(0)
+                    if self.data['bets'][0] != 0: self.do_afull_process_dynamic(0)
                     crash_1 = self.wait_crash(2)
 
                     if crash_1 < 1.2:
-                        if self.data['perc'][1] != 0: self.do_afull_process_dynamic(1)
+                        if self.data['bets'][1] != 0: self.do_afull_process_dynamic(1)
                         crash_1 = self.wait_crash(3)
 
                         if crash_1 < 1.2:
-                            if self.data['perc'][2] != 0: self.do_afull_process_dynamic(2)
+                            if self.data['bets'][2] != 0: self.do_afull_process_dynamic(2)
                             crash_1 = self.wait_crash(4)
 
                             if crash_1 < 1.2:
-                                if self.data['perc'][3] != 0: self.do_afull_process_dynamic(3)
+                                if self.data['bets'][3] != 0: self.do_afull_process_dynamic(3)
                                 crash_1 = self.wait_crash(5)
 
                                 if crash_1 < 1.2:
-                                    if self.data['perc'][4] != 0: self.do_afull_process_dynamic(4)
+                                    if self.data['bets'][4] != 0: self.do_afull_process_dynamic(4)
                                     crash_1 = self.wait_crash(6)
 
                                     if crash_1 < 1.2:
@@ -228,23 +247,23 @@ class CSGO_BAND:
                     self.click(1)
                     bal = self.get_balance()
                     self.click(1)
-                    if self.data['perc'][0] != 0: self.do_afull_process_static(0, bal)
+                    if self.data['bets'][0] != 0: self.do_afull_process_static(0, bal)
                     crash_1 = self.wait_crash(2)
 
                     if crash_1 < 1.2:
-                        if self.data['perc'][1] != 0: self.do_afull_process_static(1, bal)
+                        if self.data['bets'][1] != 0: self.do_afull_process_static(1, bal)
                         crash_1 = self.wait_crash(3)
 
                         if crash_1 < 1.2:
-                            if self.data['perc'][2] != 0: self.do_afull_process_static(2, bal)
+                            if self.data['bets'][2] != 0: self.do_afull_process_static(2, bal)
                             crash_1 = self.wait_crash(4)
 
                             if crash_1 < 1.2:
-                                if self.data['perc'][3] != 0: self.do_afull_process_static(3, bal)
+                                if self.data['bets'][3] != 0: self.do_afull_process_static(3, bal)
                                 crash_1 = self.wait_crash(5)
 
                                 if crash_1 < 1.2:
-                                    if self.data['perc'][4] != 0: self.do_afull_process_static(4, bal)
+                                    if self.data['bets'][4] != 0: self.do_afull_process_static(4, bal)
                                     crash_1 = self.wait_crash(6)
 
                                     if crash_1 < 1.2:
@@ -274,23 +293,24 @@ class CS_FAIL:
     data = {
         'login': '',
         'password': '',
-        'perc': [0, 0, 0, 0, 0],
+        'bets': [0, 0, 0, 0, 0],
         'podushka': 0,
         'type': 1,
         'id': '',
         'code': ''
     }
 
-    def __init__(self, login='', password='', perc=[0, 0.05, 0.3, 0.95, 1], podushka=0, type=1, chat_id=''):
+    def __init__(self, login='', password='', bets=[0, 0.05, 0.3, 0.95, 1], podushka=0, type=1, chat_id=''):
         self.data['login'] = login
         self.data['password'] = password
-        self.data['perc'] = perc
+        self.data['bets'] = bets
         self.data['podushka'] = podushka
         self.data['type'] = type
         self.data['id'] = chat_id
         self.driver = webdriver.Chrome(options=CS_FAIL.chrome_options)
 
     def stop_prog(self):
+        book.close()
         self.driver.quit()
         raise StopProgramm
 
@@ -352,7 +372,7 @@ class CS_FAIL:
 
     def autorisation_check(self):
         save=0
-        for i in self.data['perc']:
+        for i in self.data['bets']:
             if i > 0:
                 save=i
                 break
@@ -403,16 +423,16 @@ class CS_FAIL:
         except Exception:
             self.stop_prog()
 
-    def do_afull_process_dynamic(self, num_of_perc):
+    def do_afull_process_dynamic(self, num_of_bets):
         self.click(1)
-        self.change(self.data['perc'][num_of_perc], self.get_balance())
+        self.change(self.data['bets'][num_of_bets], self.get_balance())
         self.click(2)
         time.sleep(1)
         self.make_bet()
 
-    def do_afull_process_static(self, num_of_perc, bal):
+    def do_afull_process_static(self, num_of_bets, bal):
         self.click(1)
-        self.change(self.data['perc'][num_of_perc], bal)
+        self.change(self.data['bets'][num_of_bets], bal)
         self.click(2)
         time.sleep(1)
         self.make_bet()
@@ -432,34 +452,34 @@ class CS_FAIL:
             while True:
                 crash_1 = self.get_crash(1)
                 if crash_1 < 1.2:
-                    if self.data['perc'][0] != 0: self.do_afull_process_dynamic(0)
+                    if self.data['bets'][0] != 0: self.do_afull_process_dynamic(0)
                     crash_1 = self.wait_crash(2)
 
                     if crash_1 < 1.2:
-                        if self.data['perc'][1] != 0: self.do_afull_process_dynamic(1)
+                        if self.data['bets'][1] != 0: self.do_afull_process_dynamic(1)
                         crash_1 = self.wait_crash(3)
 
                         if crash_1 < 1.2:
-                            if self.data['perc'][2] != 0: self.do_afull_process_dynamic(2)
+                            if self.data['bets'][2] != 0: self.do_afull_process_dynamic(2)
                             crash_1 = self.wait_crash(4)
 
                             if crash_1 < 1.2:
-                                if self.data['perc'][3] != 0: self.do_afull_process_dynamic(3)
+                                if self.data['bets'][3] != 0: self.do_afull_process_dynamic(3)
                                 crash_1 = self.wait_crash(5)
 
                                 if crash_1 < 1.2:
-                                    if self.data['perc'][4] != 0: self.do_afull_process_dynamic(4)
+                                    if self.data['bets'][4] != 0: self.do_afull_process_dynamic(4)
                                     crash_1 = self.wait_crash(6)
 
                                     if crash_1 < 1.2:
                                         print("Шестерной краш")
                                         break
 
-                                    elif self.data['perc'][4] != 0: self.click(1)
-                                elif self.data['perc'][3] != 0: self.click(1)
-                            elif self.data['perc'][2] != 0: self.click(1)
-                        elif self.data['perc'][1] != 0: self.click(1)
-                    elif self.data['perc'][0] != 0: self.click(1)
+                                    elif self.data['bets'][4] != 0: self.click(1)
+                                elif self.data['bets'][3] != 0: self.click(1)
+                            elif self.data['bets'][2] != 0: self.click(1)
+                        elif self.data['bets'][1] != 0: self.click(1)
+                    elif self.data['bets'][0] != 0: self.click(1)
 
         if self.data['type'] == 2:
             crash_1 = self.get_crash(1)
@@ -471,34 +491,34 @@ class CS_FAIL:
                     self.click(1)
                     bal = self.get_balance()
                     self.click(1)
-                    if self.data['perc'][0] != 0: self.do_afull_process_static(0, bal)
+                    if self.data['bets'][0] != 0: self.do_afull_process_static(0, bal)
                     crash_1 = self.wait_crash(2)
 
                     if crash_1 < 1.2:
-                        if self.data['perc'][1] != 0: self.do_afull_process_static(1, bal)
+                        if self.data['bets'][1] != 0: self.do_afull_process_static(1, bal)
                         crash_1 = self.wait_crash(3)
 
                         if crash_1 < 1.2:
-                            if self.data['perc'][2] != 0: self.do_afull_process_static(2, bal)
+                            if self.data['bets'][2] != 0: self.do_afull_process_static(2, bal)
                             crash_1 = self.wait_crash(4)
 
                             if crash_1 < 1.2:
-                                if self.data['perc'][3] != 0: self.do_afull_process_static(3, bal)
+                                if self.data['bets'][3] != 0: self.do_afull_process_static(3, bal)
                                 crash_1 = self.wait_crash(5)
 
                                 if crash_1 < 1.2:
-                                    if self.data['perc'][4] != 0: self.do_afull_process_static(4, bal)
+                                    if self.data['bets'][4] != 0: self.do_afull_process_static(4, bal)
                                     crash_1 = self.wait_crash(6)
 
                                     if crash_1 < 1.2:
                                         print("Шестерной краш")
                                         break
 
-                                    elif self.data['perc'][4] != 0: self.click(1)
-                                elif self.data['perc'][3] != 0: self.click(1)
-                            elif self.data['perc'][2] != 0: self.click(1)
-                        elif self.data['perc'][1] != 0: self.click(1)
-                    elif self.data['perc'][0] != 0: self.click(1)
+                                    elif self.data['bets'][4] != 0: self.click(1)
+                                elif self.data['bets'][3] != 0: self.click(1)
+                            elif self.data['bets'][2] != 0: self.click(1)
+                        elif self.data['bets'][1] != 0: self.click(1)
+                    elif self.data['bets'][0] != 0: self.click(1)
 
         if self.data['type'] == 3:
             i = 0
@@ -515,147 +535,102 @@ class CS_FAIL:
                     time.sleep(0.1)
                 self.do_afull_process_dynamic(0)
 
-defolt = "Дефолтные настройки бота:\n\n" \
-         "<b>Подушка</b> - 0$\n" \
-         "<b>Одинарный</b> - 0%\n" \
-         "<b>Двойной</b> - 10%\n" \
-         "<b>Тройной</b> - 60%\n" \
-         "<b>Четверной</b> - 95%\n" \
-         "<b>Пятерной</b> - 100%\n" \
-         "<b>Тип ставок</b> - Динамический\n" \
-         "<b>Сайт</b> - csgo.band\n\n"
+def set_settings(message):#Запись данных ставок в таблицу
+    row=find_user_in_base(message.chat.id)
+    markup_reply = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    item_yes = types.KeyboardButton('Динамический')
+    item_no = types.KeyboardButton('Статический')
+    markup_reply.add(item_yes, item_no)
+    bot.send_message(message.chat.id, "Введите тип баланса (сейчас поясню):\n"
+                                      "Ставки будут производиться в процентах баланса (когда от нынешнего баланса вы ставите какую-либо часть), "
+                                      "либо они будут зафиксированы (в независимости от размера баланса вы будете ставить одну и ту же сумму, "
+                                      "конечно же непривосходящую баланс)\n"
+                                      "Динамический баланс позволит вам быстро поднятся, но с ним вы рискуете проиграть почти все\n"
+                                      "Статический баланс позволит вам уверенно подниматься, но этот процесс займет больше времени", reply_markup=markup_reply)
+    bot.register_next_step_handler(message, set_balance)
+def set_balance(message):
+    row=find_user_in_base(message.chat.id)
+    if message.text.lower()=='динамический':
+        base[row][4].value='D'
+        bot.send_message(message.chat.id, "Т", reply_markup=hide_reply_keyboard)
 
+    elif message.text.lower() == 'статический':
+        base[row][4].value='S'
+        bot.send_message(message.chat.id, "Т", reply_markup=hide_reply_keyboard)
+
+    book.save("base.xlsx")
+def change_old_user (message):
+    us=find_user_in_base(message.chat.id)
+    logs = [str(x) for x in message.text.split()]
+    base[us][1].value = logs[0]
+    base[us][2].value = logs[1]
+    book.save("base.xlsx")
+def register_new_user(message):
+    base[base.max_row+1][0].value=message.chat.id
+    logs=[str (x)  for x in message.text.split()]
+    base[base.max_row][1].value = logs[0]
+    base[base.max_row][2].value = logs[1]
+    book.save("base.xlsx")
 @bot.message_handler(commands=['start'])
 def getting_start(message):
-    markup_reply = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    item_start = types.KeyboardButton('Начать')
-    markup_reply.add(item_start)
-    bot.send_message(message.chat.id, "Нажми на кнопку, чтобы запустить бота", reply_markup=markup_reply)
-
+    if (find_user_in_base(message.chat.id) == 0):
+        markup_reply = types.ReplyKeyboardMarkup(resize_keyboard=True)
+        item_start = types.KeyboardButton('Начать')
+        markup_reply.add(item_start)
+        bot.send_message(message.chat.id, "Нажми на кнопку, чтобы запустить бота", reply_markup=markup_reply)
+    else:
+        bot.send_message(message.chat.id, "Просьба не вызывать команду '/start', вы уже зарегестрированы в базе данных")
 @bot.message_handler(commands=['steam_data'])
 def send_steam_data(message):
-    with open("table.csv", newline='') as table:
-        reader = csv.DictReader(table, delimiter=';')
-        i = 0
-        for row in reader:
-            if row['user_id'] == str(message.chat.id):
-                bot.send_message(message.chat.id, f"Логин - {row['steam_login']}, пароль - {row['steam_password']}")
-                i = 1
-        if i == 0:
-            bot.send_message(message.chat.id, "Бот не нашел запрашиваемые данные")
-        else:
-            markup_reply = types.ReplyKeyboardMarkup(resize_keyboard=True)
-            item_yes = types.KeyboardButton('Да')
-            item_no = types.KeyboardButton('Нет')
-            markup_reply.add(item_yes, item_no)
-            time.sleep(1)
-            message = bot.send_message(message.chat.id, "Хотите изменить эти данные?", reply_markup=markup_reply)
-            bot.register_next_step_handler(message, register_again)
+    us=find_user_in_base(message.chat.id)
+    if us == 0:
+        bot.send_message(message.chat.id, "Запрашиваемые данные не обнаружены")
+        markup_reply = types.ReplyKeyboardMarkup(resize_keyboard=True)
+        item_yes = types.KeyboardButton('Хочу')
+        item_no = types.KeyboardButton('Нет')
+        markup_reply.add(item_yes, item_no)
+        time.sleep(1)
+        message = bot.send_message(message.chat.id, "Хотите указать их?", reply_markup=markup_reply)
+        bot.register_next_step_handler(message, register_again)
+    else:
+        bot.send_message(message.chat.id, "Логин Steam: " + str(base[us][1].value)+"\nПароль Steam: "+ str(base[us][2].value))
+        markup_reply = types.ReplyKeyboardMarkup(resize_keyboard=True)
+        item_yes = types.KeyboardButton('Да')
+        item_no = types.KeyboardButton('Нет')
+        markup_reply.add(item_yes, item_no)
+        time.sleep(1)
+        message = bot.send_message(message.chat.id, "Хотите изменить их?", reply_markup=markup_reply)
+        bot.register_next_step_handler(message, register_again)
 
 def register_again(message):
     if message.text.lower() == 'да':
         bot.send_message(message.chat.id, "Введите данные Steam, логин и пароль, через пробел", reply_markup=hide_reply_keyboard)
+        bot.register_next_step_handler(message, change_old_user)
+    elif message.text.lower() == 'хочу':
+        bot.send_message(message.chat.id, "Введите данные Steam, логин и пароль, через пробел",reply_markup=hide_reply_keyboard)
         bot.register_next_step_handler(message, register_new_user)
     else:
-        pass
-
+        bot.send_message(message.chat.id, "Список доступных команд:\n"
+                                          "",reply_markup=hide_reply_keyboard)
 @bot.message_handler(content_types=['text'])
 def start_bot(message):
     if message.text.lower() == "начать":
-        bot.send_message(message.chat.id, "Секунду...", reply_markup=hide_reply_keyboard)
-        time.sleep(1)
-        with open("table.csv", newline='') as table:
-            reader = csv.DictReader(table, delimiter=';')
-            i = 0
-            for row in reader:
-                if row['user_id'] == str(message.chat.id):
-                    i = 1
-            if i == 1:
-                markup_reply = types.ReplyKeyboardMarkup(resize_keyboard=True)
-                item_yes = types.KeyboardButton('Да')
-                item_no = types.KeyboardButton('Нет')
-                markup_reply.add(item_yes, item_no)
-                message = bot.send_message(message.chat.id, f"{defolt}Хотите их изменить?", reply_markup=markup_reply)
-                bot.register_next_step_handler(message, change_defolt)
-            else:
-                message = bot.send_message(message.chat.id, "Для начала работы необходимо ввести данные Steam.\n"
-                                                            "Укажите логин и пароль от аккаунта через пробел")
-                bot.register_next_step_handler(message, register_new_user)
+        bot.send_message(message.chat.id,"Здравствуйте, вы активировали бота, который поможет вам полностью автоматизировать"
+                                         " ваши ставки на сайтах csgo.fail, csgo.band!\n"
+                                         "Для начала давайте настроим бота (эти параметры можно будет изменить в любой момент).")
+        base[base.max_row + 1][0].value = message.chat.id
+        set_settings(message)
     elif message.text.lower() == "стоп":
         try:
             users[message.chat.id].stop_prog()
         except StopProgramm:
             try:
                 del users[message.chat.id]
-                bot.send_message(message.chat.id, "Бот остановлен\nПерезапустите его командой /start")
+                bot.send_message(message.chat.id, "Бот остановлен\nПерезапустите его командой /begin")
             except KeyError:
                 pass
     else:
         pass
-
-def register_new_user(message):
-    str_1 = [x for x in message.text + ' ']
-    i = 0
-    global login
-    global password
-    login = ''
-    password = ''
-    for elem in str_1:
-        if elem != ' ' and i == 0:
-            login += elem
-        elif elem == ' ':
-            i +=1
-        elif elem != ' ' and i == 1:
-            password += elem
-    keyboard = types.InlineKeyboardMarkup()
-    item_yes = types.InlineKeyboardButton(text='Да', callback_data='yes')
-    item_no = types.InlineKeyboardButton(text='Нет', callback_data='no')
-    keyboard.add(item_yes, item_no)
-    bot.send_message(message.chat.id, f"Логин - {login}, пароль - {password}\nУверены, что хотите продолжить с этими данными?", reply_markup=keyboard)
-
-@bot.callback_query_handler(func=lambda call:True)
-def get_answer(call):
-    if call.data == 'yes':
-        with open("table.csv", newline='') as table:
-            reader = csv.DictReader(table, delimiter=';')
-            i = 0
-            for row in reader:
-                if row['user_id'] == str(call.message.chat.id):
-                    i = 1
-        if i == 0:
-            with open("table.csv", 'a', newline='') as file:
-                writer = csv.writer(file, delimiter=';')
-                writer.writerow([str(call.message.chat.id), login, password])
-                time.sleep(1)
-        elif i == 1:
-            usr_id = []
-            usr_login = []
-            usr_password = []
-            with open("table.csv", newline='') as table:
-                reader = csv.DictReader(table, delimiter=';')
-                for row in reader:
-                    if row['user_id'] != str(call.message.chat.id):
-                        usr_id.append(row['user_id'])
-                        usr_login.append(row['steam_login'])
-                        usr_password.append(row['steam_password'])
-            with open("table.csv", 'w', newline='') as file:
-                writer = csv.writer(file, delimiter=';')
-                writer.writerow(['user_id', 'steam_login', 'steam_password'])
-                for i in range(len(usr_id)):
-                    writer.writerow([usr_id[i], usr_login[i], usr_password[i]])
-                writer.writerow([call.message.chat.id, login, password])
-            time.sleep(1)
-        markup_reply = types.ReplyKeyboardMarkup(resize_keyboard=True)
-        item_yes = types.KeyboardButton('Да')
-        item_no = types.KeyboardButton('Нет')
-        markup_reply.add(item_yes, item_no)
-        message = bot.send_message(call.message.chat.id, f"{defolt}Хотите их изменить?", reply_markup=markup_reply)
-        bot.register_next_step_handler(message, change_defolt)
-    elif call.data == 'no':
-        bot.send_message(call.message.chat.id, "Попробуем еще раз)")
-        time.sleep(0.5)
-        bot.send_message(call.message.chat.id, "Укажите логин и пароль от аккаунта через пробел")
-        bot.register_next_step_handler(call.message, register_new_user)
 
 def change_defolt(message):
     if message.text.lower() == "да":
