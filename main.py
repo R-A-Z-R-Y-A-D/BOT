@@ -1,28 +1,34 @@
 import csv
 import telebot
-from telebot import types
 from classes import *
 
-hide_reply_keyboard = types.ReplyKeyboardRemove()
 login = ''
 password = ''
-users = {}
+
+msg = "Вот список доступных комманд:\n" \
+      "/steam_data - получить установленные данные Steam"
+
+def menu(message):
+    if message.text == '/steam_data':
+        send_steam_data(message)
+    else:
+        pass
 
 @bot.message_handler(commands=['start'])
 def getting_start(message):
-    time.sleep(10)
     if find_user_in_base(message.chat.id) == 0:
         markup_reply = types.ReplyKeyboardMarkup(resize_keyboard=True)
         item_start = types.KeyboardButton('Начать')
         markup_reply.add(item_start)
         bot.send_message(message.chat.id, "Нажми на кнопку, чтобы запустить бота", reply_markup=markup_reply)
     else:
-        bot.send_message(message.chat.id, "Просьба не вызывать команду '/start', вы уже зарегестрированы в базе данных")
+        message = bot.send_message(message.chat.id, msg, reply_markup=hide_reply_keyboard)
+        bot.register_next_step_handler(message, menu)
 
 @bot.message_handler(commands=['steam_data'])
 def send_steam_data(message):
     us = find_user_in_base(message.chat.id)
-    if us == 0:
+    if us == 0 or base[us][1].value == None and base[us][2].value == None:
         bot.send_message(message.chat.id, "Запрашиваемые данные не обнаружены")
         markup_reply = types.ReplyKeyboardMarkup(resize_keyboard=True)
         item_yes = types.KeyboardButton('Хочу')
@@ -32,7 +38,7 @@ def send_steam_data(message):
         message = bot.send_message(message.chat.id, "Хотите указать их?", reply_markup=markup_reply)
         bot.register_next_step_handler(message, register_again)
     else:
-        bot.send_message(message.chat.id, "Логин Steam: " + str(base[us][1].value)+"\nПароль Steam: " + str(base[us][2].value))
+        bot.send_message(message.chat.id, "<b>Логин Steam:</b> " + str(base[us][1].value)+"\n<b>Пароль Steam:</b> " + str(base[us][2].value))
         markup_reply = types.ReplyKeyboardMarkup(resize_keyboard=True)
         item_yes = types.KeyboardButton('Да')
         item_no = types.KeyboardButton('Нет')
@@ -84,7 +90,7 @@ def excel_start_settings():
     base['m1'].value ='Несгораемый баланс'
     base['n1'].value ='Выбранный сайт'
 
-#Запись данных ставок в таблицу
+#Записывает данные ставок в таблицу
 def set_settings(message):
     row = find_user_in_base(message.chat.id)
     markup_reply = types.ReplyKeyboardMarkup(resize_keyboard=True)
@@ -99,6 +105,7 @@ def set_settings(message):
                                       "Статический баланс позволит вам уверенно подниматься, но этот процесс займет больше времени", reply_markup=markup_reply)
     bot.register_next_step_handler(message, set_balance)
 
+#Заносит в таблицу данные о типе ставок
 def set_balance(message):
     row = find_user_in_base(message.chat.id)
     if message.text.lower() == 'динамический':
@@ -111,31 +118,39 @@ def set_balance(message):
 
     book.save("base.xlsx")
 
+#Изменяет старые данные пользователя
 def change_old_user(message):
     us = find_user_in_base(message.chat.id)
-    logs = [str(x) for x in message.text.split()]
+    logs = [str(x) for x in message.text.split(' ')]
     base[us][1].value = logs[0]
     base[us][2].value = logs[1]
     book.save("base.xlsx")
+    message = bot.send_message(message.chat.id, 'Данные сохранены\n' + msg, reply_markup=hide_reply_keyboard)
+    bot.register_next_step_handler(message, menu)
 
-def register_new_user(message):
-    base[base.max_row+1][0].value=message.chat.id
-    logs = [str(x) for x in message.text.split()]
+#Регистрирует нового пользователя
+def register_user(message):
+    base[base.max_row+1][0].value=str(message.chat.id)
+    logs = [str(x) for x in message.text.split(' ')]
     base[base.max_row][1].value = logs[0]
     base[base.max_row][2].value = logs[1]
     book.save("base.xlsx")
+    message = bot.send_message(message.chat.id, 'Данные сохранены\n' + msg, reply_markup=hide_reply_keyboard)
+    bot.register_next_step_handler(message, menu)
 
+#Получает ответ от пользователя, хочет ли он изменить свои данные
 def register_again(message):
     if message.text.lower() == 'да':
         bot.send_message(message.chat.id, "Введите данные Steam, логин и пароль, через пробел", reply_markup=hide_reply_keyboard)
         bot.register_next_step_handler(message, change_old_user)
     elif message.text.lower() == 'хочу':
         bot.send_message(message.chat.id, "Введите данные Steam, логин и пароль, через пробел",reply_markup=hide_reply_keyboard)
-        bot.register_next_step_handler(message, register_new_user)
+        bot.register_next_step_handler(message, register_user)
     else:
-        bot.send_message(message.chat.id, "Список доступных команд:\n"
-                                          "",reply_markup=hide_reply_keyboard)
+        message = bot.send_message(message.chat.id, msg, reply_markup=hide_reply_keyboard)
+        bot.register_next_step_handler(message, menu)
 
+#Перенаправляет к функции изменения дефолтных настроек или запускает бота
 def change_defolt(message):
     if message.text.lower() == "да":
         pass
@@ -160,6 +175,7 @@ def change_defolt(message):
     else:
         pass
 
+#Добавляет код в объект класса
 def code_add(message):
     try:
         if message.text.lower() == "стоп":

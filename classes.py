@@ -1,6 +1,7 @@
 import time
 import telebot
 import openpyxl
+from telebot import types
 from config import tokens, admins
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
@@ -9,6 +10,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.support import expected_conditions as EC
 
+users = {}
 token = tokens['bub']
 admin_id = admins['bub']
 #открытие файла
@@ -16,6 +18,7 @@ book = openpyxl.open("base.xlsx")
 #открытие рабочего листа файла (по умолчанию - первый)
 base = book.active
 bot = telebot.TeleBot(token, parse_mode="HTML")
+hide_reply_keyboard = types.ReplyKeyboardRemove()
 
 class StopProgramm(Exception):
     pass
@@ -31,16 +34,17 @@ class CSGO_BAND:
     chrome_options.add_argument("window-size=1920x1080")
 
     data = {
-        'login': '',
-        'password': '',
-        'bets': [0, 0, 0, 0, 0],
+        'login': 0,
+        'password': 0,
+        'bets': [0],
+        'part': [0],
         'podushka': 0,
-        'type': 1,
-        'id': '',
-        'code': ''
+        'type': 0,
+        'id': 0,
+        'code': 0
     }
 
-    def __init__(self, login='', password='', bets=[0, 0.05, 0.3, 0.95, 1], podushka=0, type=1, chat_id=''):
+    def __init__(self, login, password, bets, podushka, type, chat_id):
         self.data['login'] = login
         self.data['password'] = password
         self.data['bets'] = bets
@@ -50,9 +54,12 @@ class CSGO_BAND:
         self.driver = webdriver.Chrome(options=CSGO_BAND.chrome_options)
 
     def stop_prog(self):
-        book.close()
-        self.driver.quit()
-        raise StopProgramm
+        try:
+            book.close()
+            self.driver.quit()
+            raise StopProgramm
+        except StopProgramm:
+            print("gdz")
 
     def get_crash(self, n):
         try:
@@ -95,8 +102,6 @@ class CSGO_BAND:
             WebDriverWait(self.driver, 5).until(EC.element_to_be_clickable((By.CSS_SELECTOR, "[id='login_twofactorauth_buttonset_entercode'] > div"))).click()
             def enter(self):
                 bot.send_message(self.data['id'], "Код неверный, перезапустите бота командой /start")
-                # WebDriverWait(self.driver, 5).until(EC.element_to_be_clickable((By.CSS_SELECTOR, "[id='twofactorcode_entry']"))).send_keys(self.get_code())
-                # WebDriverWait(self.driver, 5).until(EC.element_to_be_clickable((By.CSS_SELECTOR, "[id='login_twofactorauth_buttonset_incorrectcode'] > div"))).click()
                 self.stop_prog()
             while True:
                 try:
@@ -270,16 +275,17 @@ class CS_FAIL:
     chrome_options.add_argument("window-size=1920x1080")
 
     data = {
-        'login': '',
-        'password': '',
-        'bets': [0, 0, 0, 0, 0],
+        'login': 0,
+        'password': 0,
+        'bets': [0],
+        'part': [0],
         'podushka': 0,
-        'type': 1,
-        'id': '',
-        'code': ''
+        'type': 0,
+        'id': 0,
+        'code': 0
     }
 
-    def __init__(self, login='', password='', bets=[0, 0.05, 0.3, 0.95, 1], podushka=0, type=1, chat_id=''):
+    def __init__(self, login, password, bets, podushka, type, chat_id):
         self.data['login'] = login
         self.data['password'] = password
         self.data['bets'] = bets
@@ -289,9 +295,12 @@ class CS_FAIL:
         self.driver = webdriver.Chrome(options=CS_FAIL.chrome_options)
 
     def stop_prog(self):
-        book.close()
-        self.driver.quit()
-        raise StopProgramm
+        try:
+            book.close()
+            self.driver.quit()
+            raise StopProgramm
+        except StopProgramm:
+            print("gdz")
 
     def get_crash(self, n):
         try:
