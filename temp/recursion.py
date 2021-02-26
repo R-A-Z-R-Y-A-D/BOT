@@ -1,14 +1,9 @@
-import telebot
-import requests
-import config
-import os
 import time
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
-from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.support import expected_conditions as EC
-from telebot import types
+
 
 def wait_int(str=""):
     print(str)
@@ -29,13 +24,13 @@ def wait_float(str=""):
             print("uncorrect syntax")
 
 def download_logs():
-    file = open("textfiles/logins.txt", 'r')
+    file = open("../textfiles/logins.txt", 'r')
     login = file.readline()
     password = file.readline()
     file.close()
     return {'login': login, 'password': password}
 def set_logs(login=str(), password=str()):
-    file=open("textfiles/logins.txt",'w')
+    file=open("../textfiles/logins.txt", 'w')
     file.write(login+'\n')
     file.write(password + '\n')
     file.close()
@@ -320,7 +315,7 @@ def programm ():
         print("Окно закрыто")
         driver.quit()
 id=download_logs()
-file=open("textfiles/textfail.txt", 'r')
+file=open("../textfiles/textfail.txt", 'r')
 podushka=float(file.readline())
 stairs=int(file.readline())
 stL=float(file.readline())
@@ -338,7 +333,7 @@ def send_welcome(message):
 def send_list(message):
     file_in_messege()
     list_text=''
-    for_send=open("textfiles/messege.txt","r")
+    for_send=open("../textfiles/messege.txt", "r")
     for i in for_send:
         list_text+=i
     bot.send_message(message.chat.id, list_text)

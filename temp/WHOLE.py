@@ -83,7 +83,7 @@ def zakup(bal, bet, type):
 def start():
     WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.CSS_SELECTOR, "[class='btn btn_block btn_size_create btn_purple ng-star-inserted']"))).click()
 def print_file():
-    file=open("textfiles/textfail.txt", 'r')
+    file=open("../textfiles/textfail.txt", 'r')
     podushka = float(file.readline())
     stairs=float(file.readline())
     stL = float(file.readline())
@@ -144,7 +144,7 @@ def change_file():
     else:
         stL = 0.0
     podushka = wait_float("Введите несгораемую сумму:")
-    file = open("textfiles/textfail.txt", 'w')
+    file = open("../textfiles/textfail.txt", 'w')
     file.write(str(podushka)+"\n")
     file.write(str(stairs) + "\n")
     file.write(str(stL) + "\n")
@@ -164,13 +164,13 @@ def menu():
         if punkt==3: change_logs()
         if punkt ==4:break
 def update_logs():
-    file=open("textfiles/logins.txt",'r')
+    file=open("../textfiles/logins.txt", 'r')
     login=file.readline()
     password=file.readline()
     file.close()
     return {'login': login, 'password': password}
 def change_logs():
-    file = open("textfiles/logins.txt", 'w')
+    file = open("../textfiles/logins.txt", 'w')
     file.write(input("Введите логин: "))
     file.write(input("Введите пароль: "))
     file.close()
@@ -183,7 +183,7 @@ def watch():
         return False
 try:
     menu()
-    file=open("textfiles/textfail.txt", 'r')
+    file=open("../textfiles/textfail.txt", 'r')
     podushka=float(file.readline())
     stairs=int(file.readline())
     stL=float(file.readline())
