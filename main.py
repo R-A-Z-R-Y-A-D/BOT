@@ -53,9 +53,7 @@ def send_steam_data(message):
 @bot.message_handler(content_types=['text'])
 def start_bot(message):
     if message.text.lower() == "начать":
-        msg = "Здравствуйте, вы активировали бота, который поможет вам полностью автоматизировать" \
-              "ваши ставки на сайтах csgo.fail, csgo.band!\n" \
-              "Для начала давайте настроим бота (эти параметры можно будет изменить в любой момент)."
+        msg = 'hgjgf'
         bot.send_message(message.chat.id,msg)
         base[base.max_row + 1][0].value = message.chat.id
         set_settings(message)
@@ -79,20 +77,7 @@ def find_user_in_base (rubish):
         elif row == base.max_row:
             return 0
 
-#подписывает первую строку таблицы (названия столбцов)
-def excel_start_settings():
-    base['a1'].value='id пользователя'
-    base['b1'].value='Логин Steam'
-    base['c1'].value='Пароль Steam'
-    base['d1'].value ='Статус оплаты'
-    base['e1'].value ='Тип баланса S-статический; D-динамический'
-    base['f1'].value = 'Ставки после крашей (1-5)'
-    # объединение ячеек для крашей (только подпись)
-    base.merge_cells('f1:j1')
-    base['k1'].value ='Участие в лесенках (0-нет, 1-КНК, 2-КНКНК)'
-    base['l1'].value ='Фикс. ставка после лесенки'
-    base['m1'].value ='Несгораемый баланс'
-    base['n1'].value ='Выбранный сайт'
+
 
 #Записывает данные ставок в таблицу
 def set_settings(message):
