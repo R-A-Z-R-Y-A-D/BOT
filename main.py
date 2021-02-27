@@ -1,16 +1,20 @@
 import csv
-import telebot
 from classes import *
-
-login = ''
-password = ''
 
 msg = "Вот список доступных комманд:\n" \
       "/steam_data - получить установленные данные Steam"
 
+def admin_check(id):
+    for i in admins:
+        if str(admins[i]) == str(id):
+            return True
+    return False
+
 def menu(message):
     if message.text == '/steam_data':
         send_steam_data(message)
+    if message.text == '/analytics' and admin_check(message.chat.id):
+        pass
     else:
         pass
 
@@ -18,7 +22,7 @@ def menu(message):
 def getting_start(message):
     if find_user_in_base(message.chat.id) == 0:
         markup_reply = types.ReplyKeyboardMarkup(resize_keyboard=True)
-        item_start = types.KeyboardButton('Начать')
+        item_start = types.KeyboardButton('НАЧАТЬ')
         markup_reply.add(item_start)
         bot.send_message(message.chat.id, "Нажми на кнопку, чтобы запустить бота", reply_markup=markup_reply)
     else:
@@ -34,7 +38,6 @@ def send_steam_data(message):
         item_yes = types.KeyboardButton('Хочу')
         item_no = types.KeyboardButton('Нет')
         markup_reply.add(item_yes, item_no)
-        time.sleep(1)
         message = bot.send_message(message.chat.id, "Хотите указать их?", reply_markup=markup_reply)
         bot.register_next_step_handler(message, register_again)
     else:
@@ -50,9 +53,10 @@ def send_steam_data(message):
 @bot.message_handler(content_types=['text'])
 def start_bot(message):
     if message.text.lower() == "начать":
-        bot.send_message(message.chat.id,"Здравствуйте, вы активировали бота, который поможет вам полностью автоматизировать"
-                                         " ваши ставки на сайтах csgo.fail, csgo.band!\n"
-                                         "Для начала давайте настроим бота (эти параметры можно будет изменить в любой момент).")
+        msg = "Здравствуйте, вы активировали бота, который поможет вам полностью автоматизировать" \
+              "ваши ставки на сайтах csgo.fail, csgo.band!\n" \
+              "Для начала давайте настроим бота (эти параметры можно будет изменить в любой момент)."
+        bot.send_message(message.chat.id,msg)
         base[base.max_row + 1][0].value = message.chat.id
         set_settings(message)
     elif message.text.lower() == "стоп":

@@ -12,10 +12,9 @@ from selenium.webdriver.support import expected_conditions as EC
 
 users = {}
 token = tokens['bub']
-admin_id = admins['bub']
-#открытие файла
+# открытие файла
 book = openpyxl.open("base.xlsx")
-#открытие рабочего листа файла (по умолчанию - первый)
+# открытие рабочего листа файла (по умолчанию - первый)
 base = book.active
 bot = telebot.TeleBot(token, parse_mode="HTML")
 hide_reply_keyboard = types.ReplyKeyboardRemove()
@@ -50,7 +49,7 @@ class CSGO_BAND:
         self.data['bets'] = bets
         self.data['podushka'] = podushka
         self.data['type'] = type
-        self.data['id'] = chat_id
+        self.data['id'] = str(chat_id)
         self.driver = webdriver.Chrome(options=CSGO_BAND.chrome_options)
 
     def stop_prog(self):
@@ -59,7 +58,8 @@ class CSGO_BAND:
             self.driver.quit()
             raise StopProgramm
         except StopProgramm:
-            print("gdz")
+            del users[self.data['id']]
+            bot.send_message(self.data['id'], "Бот остановлен")
 
     def get_crash(self, n):
         try:
@@ -291,7 +291,7 @@ class CS_FAIL:
         self.data['bets'] = bets
         self.data['podushka'] = podushka
         self.data['type'] = type
-        self.data['id'] = chat_id
+        self.data['id'] = str(chat_id)
         self.driver = webdriver.Chrome(options=CS_FAIL.chrome_options)
 
     def stop_prog(self):
@@ -300,7 +300,8 @@ class CS_FAIL:
             self.driver.quit()
             raise StopProgramm
         except StopProgramm:
-            print("gdz")
+            del users[self.data['id']]
+            bot.send_message(self.data['id'], "Бот остановлен")
 
     def get_crash(self, n):
         try:
