@@ -58,8 +58,11 @@ class CSGO_BAND:
             self.driver.quit()
             raise StopProgramm
         except StopProgramm:
-            del users[self.data['id']]
-            bot.send_message(self.data['id'], "Бот остановлен")
+            try:
+                del users[self.data['id']]
+                bot.send_message(self.data['id'], "Бот остановлен\nПерезапустите его командой /start")
+            except Exception:
+                pass
 
     def get_crash(self, n):
         try:
@@ -101,7 +104,7 @@ class CSGO_BAND:
             WebDriverWait(self.driver, 5).until(EC.element_to_be_clickable((By.CSS_SELECTOR, "[id='twofactorcode_entry']"))).send_keys(self.get_code())
             WebDriverWait(self.driver, 5).until(EC.element_to_be_clickable((By.CSS_SELECTOR, "[id='login_twofactorauth_buttonset_entercode'] > div"))).click()
             def enter(self):
-                bot.send_message(self.data['id'], "Код неверный, перезапустите бота командой /start")
+                bot.send_message(self.data['id'], "Код неверный")
                 self.stop_prog()
             while True:
                 try:
@@ -300,8 +303,11 @@ class CS_FAIL:
             self.driver.quit()
             raise StopProgramm
         except StopProgramm:
-            del users[self.data['id']]
-            bot.send_message(self.data['id'], "Бот остановлен")
+            try:
+                del users[self.data['id']]
+                bot.send_message(self.data['id'], "Бот остановлен\nПерезапустите его командой /start")
+            except Exception:
+                pass
 
     def get_crash(self, n):
         try:
@@ -343,7 +349,7 @@ class CS_FAIL:
             WebDriverWait(self.driver, 5).until(EC.element_to_be_clickable((By.CSS_SELECTOR, "[id='twofactorcode_entry']"))).send_keys(self.get_code())
             WebDriverWait(self.driver, 5).until(EC.element_to_be_clickable((By.CSS_SELECTOR, "[id='login_twofactorauth_buttonset_entercode'] > div"))).click()
             def enter(self):
-                bot.send_message(self.data['id'], "Код неверный, перезапустите бота командой /start")
+                bot.send_message(self.data['id'], "Код неверный")
                 self.stop_prog()
             while True:
                 try:
@@ -415,14 +421,14 @@ class CS_FAIL:
     def do_afull_process_dynamic(self, num_of_bets):
         self.click(1)
         self.change(self.data['bets'][num_of_bets], self.get_balance())
-        self.click(2)
-        time.sleep(1)
+        self.click(1)
+        time.sleep(0.5)
         self.make_bet()
 
     def do_afull_process_static(self, num_of_bets, bal):
         self.click(1)
         self.change(self.data['bets'][num_of_bets], bal)
-        self.click(2)
+        self.click(1)
         time.sleep(1)
         self.make_bet()
 

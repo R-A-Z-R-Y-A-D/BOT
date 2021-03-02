@@ -28,10 +28,13 @@ def menu(message):
     elif message.text == '/analytics' and admin_check(message.chat.id):
         pass
     elif message.text == '/get_data':
-        send_table_data(message.chat.id)
+        send_table_data(message, message.chat.id)
     elif message.text == '/help':
         pass
     elif message.text == '/begin':
+        msg = "Бот запущен, напечатайте <b>стоп</b>, чтобы остановить его\n" \
+              "Введите код Steam Guard как только мы вас попросим"
+        bot.send_message(message.chat.id, msg)
         start_programm(message, message.chat.id)
     else:
         pass
@@ -42,24 +45,34 @@ def code_add(message):
             users[str(message.chat.id)].stop_prog()
         else:
             users[str(message.chat.id)].data['code'] = message.text
-            users[str(message.chat.id)].autorisation()
-            users[str(message.chat.id)].autorisation_check()
-            # bot.send_message(message.chat.id, "Бот остановлен\nПерезапустите его командой /start")
+            try:
+                users[str(message.chat.id)].autorisation()
+                users[str(message.chat.id)].autorisation_check()
+            except Exception:
+                pass
 
 # Запускает программу
 def start_programm(message, id):
     arr = get_data_from_table(id)
-    # if arr[3] != 'none':
-    #     pass
-    # else:
-    if arr[9] == 'csgo.band':
-        if arr[4] == 'Динамический':
-            type = 1
-        elif arr[4] == 'Статический':
-            type = 2
-        users[str(id)] = CSGO_BAND(login=arr[1], password=arr[2], bets=arr[5], type=type, chat_id=str(id), podushka=float(arr[8]))
-        users[str(id)].pre_autorisation()
-        bot.register_next_step_handler(message, code_add)
+    if arr[3] != 'none':
+        pass
+    else:
+        if arr[9] == 'csgo.band':
+            if arr[4] == 'Динамический':
+                type = 1
+            elif arr[4] == 'Статический':
+                type = 2
+            users[str(id)] = CSGO_BAND(login=arr[1], password=arr[2], bets=arr[5], type=type, chat_id=str(id), podushka=float(arr[8]))
+            users[str(id)].pre_autorisation()
+            bot.register_next_step_handler(message, code_add)
+        if arr[9] == 'cs.fail':
+            if arr[4] == 'Динамический':
+                type = 1
+            elif arr[4] == 'Статический':
+                type = 2
+            users[str(id)] = CS_FAIL(login=arr[1], password=arr[2], bets=arr[5], type=type, chat_id=str(id), podushka=float(arr[8]))
+            users[str(id)].pre_autorisation()
+            bot.register_next_step_handler(message, code_add)
 
 # Индексация
 # 0. id пользователя
@@ -92,7 +105,7 @@ def get_data_from_table(id):
     return arr
 
 # Отправляет пользователю его данные из таблицы
-def send_table_data(id):
+def send_table_data(message, id):
     row = find_user_in_base(id)
     arr = get_data_from_table(id)
     bets = ''
@@ -104,6 +117,7 @@ def send_table_data(id):
           f"Несгораемая сумма <b>{arr[8]} $</b>\n" \
           f"Выбранный сайт <b>{arr[9]}</b>"
     bot.send_message(int(base[row][0].value), msg)
+    bot.register_next_step_handler(message, menu)
 
 # Проверяет пользователя, админ он или нет
 def admin_check(id):
@@ -132,11 +146,17 @@ def getting_start(message):
         message = bot.send_message(message.chat.id, menu_message, reply_markup=hide_reply_keyboard)
         bot.register_next_step_handler(message, menu)
 
+# Обрабатывает входящий текст, когда пользователь запустил бота
+@bot.message_handler(content_types=['text'])
+def get_any_text(message):
+    if message.text.lower() == 'стоп' and users[str(message.chat.id)] != None:
+        users[str(message.chat.id)].stop_prog()
+
 # Отсылает к функции сбора данных Steam
 def make_new_user(message):
     if message.text.lower() == 'начать':
         welcome_text = "Здравствуйте, вы активировали бота, который поможет вам полностью автоматизировать" \
-                       "ваши ставки на сайтах csgo.fail, csgo.band!\n" \
+                       "ваши ставки на сайтах cs.fail, csgo.band!\n" \
                        "Для начала давайте настроим бота (эти параметры можно будет изменить в любой момент)\n" \
                        "Введите ваши данные Steam, логин и пароль через пробел"
         message = bot.send_message(message.chat.id, welcome_text, reply_markup=hide_reply_keyboard)
@@ -204,7 +224,7 @@ def set_crashes(message, st_data):
             bot.register_next_step_handler(message, set_crashes, st_data)
         else:
             markup_reply = types.ReplyKeyboardMarkup(resize_keyboard=True)
-            item_fail = types.KeyboardButton('csgo.fail')
+            item_fail = types.KeyboardButton('cs.fail')
             item_band = types.KeyboardButton('csgo.band')
             markup_reply.add(item_fail, item_band)
             message = bot.send_message(message.chat.id, "Осталось пару шагов\nВыберите сайт, на котором хотите ставить", reply_markup=markup_reply)
@@ -218,8 +238,8 @@ def set_site(message, bets, st_data):
     markup_reply = types.ReplyKeyboardMarkup(resize_keyboard=True)
     item_pillow = types.KeyboardButton('0')
     markup_reply.add(item_pillow)
-    if message.text == 'csgo.fail':
-        site = 'csgo.fail'
+    if message.text == 'cs.fail':
+        site = 'cs.fail'
         msg = bot.send_message(message.chat.id,"Теперь введите подушку безопасности (сумма, которой вы не готовы рисковать)\nСоветуем поставить значение 0", reply_markup=markup_reply)
         bot.register_next_step_handler(msg, set_pillow, site, bets, st_data)
     elif message.text == 'csgo.band':
