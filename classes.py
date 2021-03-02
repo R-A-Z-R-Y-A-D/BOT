@@ -25,9 +25,9 @@ class StopProgramm(Exception):
 class CSGO_BAND:
 
     chrome_options = webdriver.ChromeOptions()
-    chrome_options.add_argument("--headless")
-    chrome_options.add_argument("--disable-dev-shm-usage")
-    chrome_options.add_argument("--no-sandbox")
+    # chrome_options.add_argument("--headless")
+    # chrome_options.add_argument("--disable-dev-shm-usage")
+    # chrome_options.add_argument("--no-sandbox")
     chrome_options.add_argument("--mute-audio")
     chrome_options.add_argument("--incognito")
     chrome_options.add_argument("window-size=1920x1080")
@@ -49,7 +49,7 @@ class CSGO_BAND:
         self.data['bets'] = bets
         self.data['podushka'] = podushka
         self.data['type'] = type
-        self.data['id'] = str(chat_id)
+        self.data['id'] = chat_id
         self.driver = webdriver.Chrome(options=CSGO_BAND.chrome_options)
 
     def stop_prog(self):

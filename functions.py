@@ -2,7 +2,9 @@ from classes import *
 
 menu_message = 'Список доступных комманд:\n' \
                '/steam_data - показать сохраненные данные Steam\n' \
-               '/help - получить справку по всем настройкам'
+               '/help - получить справку по всем настройкам\n' \
+               '/get_data - получить все сохраненные данные по ставкам\n' \
+               '/begin - запустить бота с текущими настройками'
 
 # Подписывает первую строку таблицы (названия столбцов)
 def excel_start_settings():
@@ -23,10 +25,85 @@ def excel_start_settings():
 def menu(message):
     if message.text == '/steam_data':
         send_steam_data(message)
-    if message.text == '/analytics' and admin_check(message.chat.id):
+    elif message.text == '/analytics' and admin_check(message.chat.id):
         pass
+    elif message.text == '/get_data':
+        send_table_data(message.chat.id)
+    elif message.text == '/help':
+        pass
+    elif message.text == '/begin':
+        start_programm(message, message.chat.id)
     else:
         pass
+
+# Добавляет код в объект класса
+def code_add(message):
+        if message.text.lower() == "стоп":
+            users[str(message.chat.id)].stop_prog()
+        else:
+            users[str(message.chat.id)].data['code'] = message.text
+            users[str(message.chat.id)].autorisation()
+            users[str(message.chat.id)].autorisation_check()
+            # bot.send_message(message.chat.id, "Бот остановлен\nПерезапустите его командой /start")
+
+# Запускает программу
+def start_programm(message, id):
+    arr = get_data_from_table(id)
+    # if arr[3] != 'none':
+    #     pass
+    # else:
+    if arr[9] == 'csgo.band':
+        if arr[4] == 'Динамический':
+            type = 1
+        elif arr[4] == 'Статический':
+            type = 2
+        users[str(id)] = CSGO_BAND(login=arr[1], password=arr[2], bets=arr[5], type=type, chat_id=str(id), podushka=float(arr[8]))
+        users[str(id)].pre_autorisation()
+        bot.register_next_step_handler(message, code_add)
+
+# Индексация
+# 0. id пользователя
+# 1. логин
+# 2. пароль
+# 3. статус оплаты
+# 4. тип баланса
+# 5. ставки
+# 6. участие в лесенке
+# 7. фиксированная ставка для лесенки
+# 8. несгораемая сумма
+# 9. сайт
+# Получает все данные пользователя по его id
+def get_data_from_table(id):
+    row = find_user_in_base(str(id))
+    arr = []
+    bets = []
+    arr.append(id)
+    arr.append(base[row][1].value)
+    arr.append(base[row][2].value)
+    arr.append(base[row][3].value)
+    arr.append(base[row][4].value)
+    for i in range(5):
+        bets.append(round(float(base[row][i+5].value)/100, 2))
+    arr.append(bets)
+    arr.append(base[row][10].value)
+    arr.append(base[row][11].value)
+    arr.append(float(base[row][12].value))
+    arr.append(base[row][13].value)
+    return arr
+
+# Отправляет пользователю его данные из таблицы
+def send_table_data(id):
+    row = find_user_in_base(id)
+    arr = get_data_from_table(id)
+    bets = ''
+    for i in range(5):
+        bets += str(round(arr[5][i]*100)) + '% '
+    msg = f"Статус оплаты {'<b>Не оплачено</b>' if arr[3] == 'none' else '<b>Оплачено</b>'}\n\n" \
+          f"Тип баланса <b>{arr[4]}</b>\n" \
+          f"Ставки {'<b>'+bets+'</b>'}\n" \
+          f"Несгораемая сумма <b>{arr[8]} $</b>\n" \
+          f"Выбранный сайт <b>{arr[9]}</b>"
+    bot.send_message(int(base[row][0].value), msg)
 
 # Проверяет пользователя, админ он или нет
 def admin_check(id):
@@ -68,7 +145,6 @@ def make_new_user(message):
         pass
 
 # Отсылает пользователю сохраненные в таблице данные Steam
-@bot.message_handler(commands=['steam_data'])
 def send_steam_data(message):
     us = find_user_in_base(message.chat.id)
     if not us:
@@ -108,6 +184,7 @@ def add_st_data_to_table(message, index=0):
             us = find_user_in_base(message.chat.id)
             base[us][1].value = data[0]
             base[us][2].value = data[1]
+            book.save("base.xlsx")
             message = bot.send_message(message.chat.id, f"Данные были успешно сохранены\n{menu_message}")
             bot.register_next_step_handler(message, menu)
         elif index == 1:
@@ -142,11 +219,11 @@ def set_site(message, bets, st_data):
     item_pillow = types.KeyboardButton('0')
     markup_reply.add(item_pillow)
     if message.text == 'csgo.fail':
-        site = 'fail'
+        site = 'csgo.fail'
         msg = bot.send_message(message.chat.id,"Теперь введите подушку безопасности (сумма, которой вы не готовы рисковать)\nСоветуем поставить значение 0", reply_markup=markup_reply)
         bot.register_next_step_handler(msg, set_pillow, site, bets, st_data)
     elif message.text == 'csgo.band':
-        site = 'band'
+        site = 'csgo.band'
         msg = bot.send_message(message.chat.id, "Теперь введите подушку безопасности (сумма, которой вы не готовы рисковать)\nСоветуем поставить значение 0", reply_markup=markup_reply)
         bot.register_next_step_handler(msg, set_pillow, site, bets, st_data)
     else:
@@ -172,13 +249,13 @@ def set_type(message, pillow, site, bets, st_data):
     end_text = "Фух... Настройка завершена, теперь вы можете воспользоваться ботом\n" \
                "Остальные функции можно настроить отдельно"
     if message.text.lower() == 'статический':
-        type = 'st'
+        type = 'Статический'
         bot.send_message(message.chat.id, end_text, reply_markup=hide_reply_keyboard)
         add_to_table(type, pillow, site, bets, st_data, message.chat.id)
         m = bot.send_message(message.chat.id, menu_message)
         bot.register_next_step_handler(m, menu)
     elif message.text.lower() == 'динамический':
-        type = 'dn'
+        type = 'Динамический'
         bot.send_message(message.chat.id, end_text, reply_markup=hide_reply_keyboard)
         add_to_table(type, pillow, site, bets, st_data, message.chat.id)
         m = bot.send_message(message.chat.id, menu_message)
@@ -197,6 +274,8 @@ def add_to_table(type, pillow, site, bets, st_data, id):
     base[row][4].value = type
     for i in range (5, 10):
         base[row][i].value = bets[i-5]
+    base[row][10].value = 'none'
+    base[row][11].value = 'none'
     base[row][12].value = pillow
     base[row][13].value = site
     book.save("base.xlsx")
