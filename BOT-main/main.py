@@ -99,14 +99,62 @@ def set_balance(message):
     row = find_user_in_base(message.chat.id)
     if message.text.lower() == 'динамический':
         base[row][4].value = 'D'
-        bot.send_message(message.chat.id, "Т", reply_markup=hide_reply_keyboard)
+        bot.send_message(message.chat.id,
+                         "А теперь последовательно введите ставки (начиная со ставки после одинарного краша и заканчивая ставкой после пятерного).\n"
+                         "Обратите внимание, что в динамическом балансе ставки измеряются в процентах. "
+                         "Значение '100' будет означать, что бот поставит весь допустимый для ставок баланс.\n"
+                         "Вводить ставки следует в отдельнх сообщениях. "
+                         "При вводе нецелого числа, дробную часть отделять точкой.", reply_markup=hide_reply_keyboard)
+
 
     elif message.text.lower() == 'статический':
         base[row][4].value = 'S'
-        bot.send_message(message.chat.id, "Т", reply_markup=hide_reply_keyboard)
+        bot.send_message(message.chat.id,
+                         "А теперь последовательно введите ставки (начиная со ставки после одинарного краша и заканчивая ставкой после пятерного).\n"
+                         "Обратите внимание, что в статическом балансе ставки измеряются в долларах. "
+                         "Если ставка будет превышать доступный для пользования ботом баланс, бот остановит свою работу. \n"
+                         "Вводить ставки следует в отдельнх сообщениях. "
+                         "При вводе нецелого числа, дробную часть отделять точкой.", reply_markup=hide_reply_keyboard)
 
     book.save("base.xlsx")
+    message.text = ''
+    bot.register_next_step_handler(message, wait_float)
 
+
+def wait_float(message):  # функция будет работать до тех пор, пока пользователь не введет float
+    a = message.text
+    try:
+        print(a)
+        float(a)
+        print(a)
+        set_bets(message, a)
+    except ValueError:
+        print("Текст = 0")
+        bot.send_message(message.chat.id, "Неверный формат ввода")
+        bot.register_next_step_handler(message, wait_float)
+
+
+
+def set_bets(message, bet):
+    print("here")
+    row = find_user_in_base(message.chat.id)
+    i = 4
+    while base[row][9].value == None:
+        base[row][i].value = bet
+        book.save("base.xlsx")
+        i+=1
+        wait_float(message)
+
+    if base[row][10].value == None:
+        message.text = ''
+        bot.send_message(message.chat.id,
+                         "Введенное значение - " + str(bet) + ". Введите значение следующей ставки.")
+        bot.register_next_step_handler(message, set_bets)
+    else:
+        bot.send_message(message.chat.id, "Ваши ставки от первой до последней:")
+        for rubish in base.iter_cols(min_col=6, max_col=10, min_row=row, max_row=row):
+            for cell in rubish:
+                bot.send_message(message.chat.id, cell.value)
 #Изменяет старые данные пользователя
 def change_old_user(message):
     us = find_user_in_base(message.chat.id)
