@@ -4,7 +4,8 @@ menu_message = 'Список доступных комманд:\n' \
                '/steam_data - показать сохраненные данные Steam\n' \
                '/help - получить справку по всем настройкам\n' \
                '/get_data - получить все сохраненные данные по ставкам\n' \
-               '/begin - запустить бота с текущими настройками\n'
+               '/begin - запустить бота с текущими настройками\n' \
+               '/re_autorisation - изменить данные по ставкам'
 
 # Подписывает первую строку таблицы (названия столбцов)
 def excel_start_settings():
@@ -12,7 +13,7 @@ def excel_start_settings():
     base['b1'].value='Логин Steam'
     base['c1'].value='Пароль Steam'
     base['d1'].value ='Статус оплаты'
-    base['e1'].value ='Тип баланса S-статический; D-динамический'
+    base['e1'].value ='Тип баланса'
     base['f1'].value = 'Ставки после крашей (1-5)'
     # объединение ячеек для крашей (только подпись)
     base.merge_cells('f1:j1')
@@ -30,7 +31,18 @@ def menu(message):
     elif message.text == '/get_data':
         send_table_data(message, message.chat.id)
     elif message.text == '/help':
-        pass
+        bot.register_next_step_handler(message, send_inf)
+    elif message.text == '/re_autorisation':
+        row = find_user_in_base(message.chat.id)
+        data = [base[row][1], base[row][2]]
+        markup_reply = types.ReplyKeyboardMarkup(resize_keyboard=True)
+        item = types.KeyboardButton('0 5 28 95 100')
+        markup_reply.add(item)
+        message = bot.send_message(message.chat.id,
+                                   "Введите 5 чисел от 0 до 100 через пробел, которые отражают процент ставок после одинарного, двойного и тд краша соответственно\n"
+                                   "Рекомендации: 0 5 28 95 100",
+                                   reply_markup=markup_reply)
+        bot.register_next_step_handler(message, set_crashes, data)
     elif message.text == '/begin':
         if not str(message.chat.id) in users:
             msg = "Бот запущен, напечатайте <b>стоп</b>, чтобы остановить его\n" \
@@ -42,6 +54,12 @@ def menu(message):
             bot.register_next_step_handler(message, menu)
     else:
         pass
+
+# Отправляет информацию по настройкам через команду "/help"
+def send_inf(message):
+    msg = ''
+    bot.send_message(message.chat.id, msg)
+    bot.register_next_step_handler(message, menu)
 
 # Добавляет код в объект класса
 def code_add(message):
