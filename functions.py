@@ -4,7 +4,7 @@ menu_message = 'Список доступных комманд:\n' \
                '/steam_data - показать сохраненные данные Steam\n' \
                '/help - получить справку по всем настройкам\n' \
                '/get_data - получить все сохраненные данные по ставкам\n' \
-               '/begin - запустить бота с текущими настройками'
+               '/begin - запустить бота с текущими настройками\n'
 
 # Подписывает первую строку таблицы (названия столбцов)
 def excel_start_settings():
@@ -32,10 +32,14 @@ def menu(message):
     elif message.text == '/help':
         pass
     elif message.text == '/begin':
-        msg = "Бот запущен, напечатайте <b>стоп</b>, чтобы остановить его\n" \
-              "Введите код Steam Guard как только мы вас попросим"
-        bot.send_message(message.chat.id, msg)
-        start_programm(message, message.chat.id)
+        if not str(message.chat.id) in users:
+            msg = "Бот запущен, напечатайте <b>стоп</b>, чтобы остановить его\n" \
+                  "Введите код Steam Guard как только мы вас попросим"
+            bot.send_message(message.chat.id, msg)
+            start_programm(message, message.chat.id)
+        else:
+            bot.send_message(message.chat.id, "Одновременно может работать только один бот")
+            bot.register_next_step_handler(message, menu)
     else:
         pass
 
