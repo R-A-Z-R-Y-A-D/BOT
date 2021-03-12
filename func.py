@@ -1,6 +1,7 @@
+from telebot import types
+from config import *
 from classes import *
-from main import *
-
+import time
 
 menu_message = 'Список доступных комманд:\n' \
                '/steam_data - показать сохраненные данные Steam\n' \
@@ -8,63 +9,6 @@ menu_message = 'Список доступных комманд:\n' \
                '/get_data - получить все сохраненные данные по ставкам\n' \
                '/begin - запустить бота с текущими настройками\n' \
                '/re_autorisation - изменить данные по ставкам'
-
-
-# Индексация
-# 0. id пользователя
-# 1. логин
-# 2. пароль
-# 3. статус оплаты
-# 4. тип баланса
-# 5. ставки
-# 6. участие в лесенке
-# 7. фиксированная ставка для лесенки
-# 8. несгораемая сумма
-# 9. сайт
-# Получает все данные пользователя по его id
-def get_data_from_table(id):
-    row = find_user_in_base(str(id))
-    arr = []
-    bets = []
-    arr.append(id)
-    arr.append(base[row][1].value)
-    arr.append(base[row][2].value)
-    arr.append(base[row][3].value)
-    arr.append(base[row][4].value)
-    for i in range(5):
-        bets.append(round(float(base[row][i+5].value)/100, 2))
-    arr.append(bets)
-    arr.append(base[row][10].value)
-    arr.append(base[row][11].value)
-    arr.append(float(base[row][12].value))
-    arr.append(base[row][13].value)
-    return arr
-
-# Добавляет код в объект класса
-def code_add(message):
-        if message.text.lower() == "стоп":
-            users[str(message.chat.id)].stop_prog()
-        else:
-            users[str(message.chat.id)].data['code'] = message.text
-            try:
-                users[str(message.chat.id)].autorisation()
-                users[str(message.chat.id)].autorisation_check()
-            except Exception:
-                pass
-
-# Обработчик команды старт
-# Выдает меню зарегистрированному пользователю или переходит к регистрации нового
-@bot.message_handler(commands=['start'])
-def getting_start(message):
-    if find_user_in_base(message.chat.id) == 0:
-        markup_reply = types.ReplyKeyboardMarkup(resize_keyboard=True)
-        item_start = types.KeyboardButton('НАЧАТЬ')
-        markup_reply.add(item_start)
-        message = bot.send_message(message.chat.id, 'Нажмите на кнопку, чтобы запустить бота', reply_markup=markup_reply)
-        bot.register_next_step_handler(message, make_new_user)
-    else:
-        message = bot.send_message(message.chat.id, menu_message, reply_markup=hide_reply_keyboard)
-        bot.register_next_step_handler(message, menu)
 
 # Обрабатывает комманды из меню
 def menu(message):
@@ -100,75 +44,6 @@ def menu(message):
     else:
         pass
 
-# Отправляет информацию по настройкам через команду "/help"
-def send_inf(message):
-    msg = ''
-    bot.send_message(message.chat.id, msg)
-    bot.register_next_step_handler(message, menu)
-
-
-
-# Запускает программу
-def start_programm(message, id):
-    arr = get_data_from_table(id)
-    if arr[3] != 'none':
-        pass
-    else:
-        if arr[9] == 'csgo.band':
-            if arr[4] == 'Динамический':
-                type = 1
-            elif arr[4] == 'Статический':
-                type = 2
-            users[str(id)] = CSGO_BAND(login=arr[1], password=arr[2], bets=arr[5], type=type, chat_id=str(id), podushka=float(arr[8]))
-            users[str(id)].pre_autorisation()
-            bot.register_next_step_handler(message, code_add)
-        if arr[9] == 'cs.fail':
-            if arr[4] == 'Динамический':
-                type = 1
-            elif arr[4] == 'Статический':
-                type = 2
-            users[str(id)] = CS_FAIL(login=arr[1], password=arr[2], bets=arr[5], type=type, chat_id=str(id), podushka=float(arr[8]))
-            users[str(id)].pre_autorisation()
-            bot.register_next_step_handler(message, code_add)
-
-
-
-# Отправляет пользователю его данные из таблицы
-def send_table_data(message, id):
-    row = find_user_in_base(id)
-    arr = get_data_from_table(id)
-    bets = ''
-    for i in range(5):
-        bets += str(round(arr[5][i]*100)) + '% '
-    msg = f"Статус оплаты {'<b>Не оплачено</b>' if arr[3] == 'none' else '<b>Оплачено</b>'}\n\n" \
-          f"Тип баланса <b>{arr[4]}</b>\n" \
-          f"Ставки {'<b>'+bets+'</b>'}\n" \
-          f"Несгораемая сумма <b>{arr[8]} $</b>\n" \
-          f"Выбранный сайт <b>{arr[9]}</b>"
-    bot.send_message(int(base[row][0].value), msg)
-    bot.register_next_step_handler(message, menu)
-
-
-
-# Обрабатывает входящий текст, когда пользователь запустил бота
-@bot.message_handler(content_types=['text'])
-def get_any_text(message):
-    if message.text.lower() == 'стоп' and users[str(message.chat.id)] != None:
-        users[str(message.chat.id)].stop_prog()
-
-# Отсылает к функции сбора данных Steam
-def make_new_user(message):
-    if message.text.lower() == 'начать':
-        welcome_text = "Здравствуйте.\n" \
-                       "Вы активировали бота, который поможет вам полностью автоматизировать" \
-                       "ваши ставки на сайтах cs.fail, csgo.band!\n" \
-                       "Бот имеет огромные возможности, связанные с автоматизацией ставой,\n" \
-                       "которые будут только улучшаться с каждым обновлением\n" \
-                       "Для начала давайте настроим бота (эти параметры можно будет изменить в любой момент)\n" \
-                       "Введите ваши данные Steam, логин и пароль через пробел"
-        message = bot.send_message(message.chat.id, welcome_text, reply_markup=hide_reply_keyboard)
-        bot.register_next_step_handler(message, add_st_data_to_table, index=1)
-
 # Отсылает пользователю сохраненные в таблице данные Steam
 def send_steam_data(message):
     us = find_user_in_base(message.chat.id)
@@ -185,6 +60,63 @@ def send_steam_data(message):
         message = bot.send_message(message.chat.id, "Хотите изменить их?", reply_markup=markup_reply)
         bot.register_next_step_handler(message, register_again)
 
+# Отправляет пользователю его данные из таблицы
+def send_table_data(message, id):
+    row = find_user_in_base(id)
+    arr = get_data_from_table(id)
+    bets = ''
+    for i in range(5):
+        bets += str(round(arr['bets'][i] * 100)) + '% '
+    msg = f"Статус оплаты {'<b>Не оплачено</b>' if arr['status'] == 'none' else '<b>Оплачено</b>'}\n\n" \
+          f"Тип баланса <b>{arr['type']}</b>\n" \
+          f"Ставки {'<b>' + bets + '</b>'}\n" \
+          f"Несгораемая сумма <b>{arr['podushka']} $</b>\n" \
+          f"Выбранный сайт <b>{arr['site']}</b>"
+    bot.send_message(int(base[row][0].value), msg)
+    bot.register_next_step_handler(message, menu)
+
+# Получает все данные пользователя по его id
+def get_data_from_table(id):
+    row = find_user_in_base(str(id))
+    arr = {}
+    bets = []
+    arr['id'] = str(id)
+    arr['login'] = base[row][1].value
+    arr['password'] = base[row][2].value
+    arr['status'] = base[row][3].value
+    arr['type'] = base[row][4].value
+    for i in range(5):
+        bets.append(round(float(base[row][i+5].value)/100, 2))
+    arr['bets'] = bets
+    arr['stairs'] = base[row][10].value
+    arr['fix_bet'] = base[row][11].value
+    arr['podushka'] = float(base[row][12].value)
+    arr['site'] = base[row][13].value
+    return arr
+
+# Отправляет информацию по настройкам через команду "/help"
+def send_inf(message):
+    message = bot.send_message(message.chat.id, 'Пока тут пусто')
+    bot.register_next_step_handler(message, menu)
+
+# Запускает программу
+def start_programm(message, id):
+    arr = get_data_from_table(id)
+    if arr['status'] != 'none':
+        pass
+    else:
+        if arr['type'] == 'Динамический':
+            type = 1
+        elif arr['type'] == 'Статический':
+            type = 2
+        array = [arr['login'], arr['password'], arr['bets'], arr['fix_bet'], arr['podushka'], type, arr['id']]
+        if arr['site'] == 'csgo.band':
+            users[str(id)] = CsgoBand(array)
+            users[str(id)]()
+        if arr['site'] == 'cs.fail':
+            users[str(id)] = CsFail(array)
+            users[str(id)]()
+
 # Принимает ответ от пользователя, хочет он изменить свои данные или нет
 def register_again(message):
     if message.text.lower() == 'нет':
@@ -194,7 +126,37 @@ def register_again(message):
         message = bot.send_message(message.chat.id, 'Введите ваши данные Steam, логин и пароль, через пробел', reply_markup=hide_reply_keyboard)
         bot.register_next_step_handler(message, add_st_data_to_table)
 
-# Заносит данные в таблицу, если они были введены верно
+
+
+def admin_check(id):
+    for i in admins:
+        if str(admins[i]) == str(id):
+            return True
+    return False
+
+def find_user_in_base (id):
+    for row in range(1, base.max_row+1):
+        if str(base[row][0].value) == str(id):
+            return row
+    return False
+
+
+
+# Отсылает к функции сбора данных Steam
+def make_new_user(message):
+    if message.text.lower() == 'начать':
+        welcome_text = "Здравствуйте.\n" \
+                       "Вы активировали бота, который поможет вам полностью автоматизировать" \
+                       "ваши ставки на сайтах cs.fail, csgo.band!\n" \
+                       "Бот имеет огромные возможности, связанные с автоматизацией ставой,\n" \
+                       "которые будут только улучшаться с каждым обновлением\n" \
+                       "Для начала давайте настроим бота (эти параметры можно будет изменить в любой момент)\n" \
+                       "Введите ваши данные Steam, логин и пароль через пробел"
+        message = bot.send_message(message.chat.id, welcome_text, reply_markup=hide_reply_keyboard)
+        bot.register_next_step_handler(message, add_st_data_to_table, index=1)
+
+# Изменяет старые данные для зарегистрированного пользователя или
+# Перенаправляет нового пользователя в функцию для получения ставок
 def add_st_data_to_table(message, index=0):
     data = [str(x) for x in message.text.split()]
     if len(data) != 2:
@@ -312,10 +274,8 @@ def add_to_table(type, pillow, site, bets, st_data, id):
     for i in range (5, 10):
         base[row][i].value = bets[i-5]
     base[row][10].value = 'none'
-    base[row][11].value = 'none'
+    base[row][11].value = '1.2'
     base[row][12].value = pillow
     base[row][13].value = site
     book.save("base.xlsx")
     time.sleep(1)
-
-bot.polling(none_stop=True, interval=0.5)
