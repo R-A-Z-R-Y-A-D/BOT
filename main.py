@@ -2,20 +2,6 @@ from classes import *
 from func import *
 from config import *
 
-# a = 0
-# @bot.message_handler(commands=['start'])
-# def getting_start(message):
-#     global a
-#     array = ['Velocycle0', 'aSdFtGy160505', [0.1, 0.28, 0.39, 0.95, 1], '1.2', 0, 1, admins['bub']]
-#     a = CsFail(array)
-#     a.autirisation()
-#     a.autorisation_check()
-#     print('ok')
-#
-# @bot.message_handler(content_types=['text'])
-# def get_any_text(message):
-#     a.data['code'] = message.text
-
 @bot.message_handler(commands=['start'])
 def getting_start(message):
     if find_user_in_base(message.chat.id) == 0:
